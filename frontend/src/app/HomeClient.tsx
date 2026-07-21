@@ -9,6 +9,8 @@ import { useFoods, useCategories, FoodCard, FoodGridSkeleton, CategoryFilter } f
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { Button } from '@/components/ui/Button';
+import { useAddToCart, extractCartError } from '../features/cart';
+import { useToast } from '../hooks/useToast';
 import { NotificationDropdown } from '../features/notification/components/NotificationDropdown';
 import type { ApiFood, FoodsQueryParams } from '../features/menu';
 import { 
@@ -174,6 +176,8 @@ function MenuSection({
 }) {
   const router = useRouter();
   const { isLoggedIn } = useAuthStore();
+  const { toast } = useToast();
+  const { mutate: addToCart } = useAddToCart();
   const [search, setSearch] = React.useState('');
   const [debouncedSearch, setDebouncedSearch] = React.useState('');
   const [page, setPage] = React.useState(1);
@@ -196,10 +200,22 @@ function MenuSection({
 
   const handleAddToCart = (food: ApiFood) => {
     if (!isLoggedIn) {
-      router.push(`/login?redirect=/cart`);
+      router.push(`/login?redirect=/`);
       return;
     }
-    router.push('/cart');
+    const defaultVariant = food.variants?.[0];
+    if (!defaultVariant) {
+      toast.error("No variants available for this item.");
+      return;
+    }
+    addToCart({ variant: defaultVariant._id, quantity: 1 }, {
+      onSuccess: () => {
+        toast.success(`${food.name} (${defaultVariant.name}) added to cart!`);
+      },
+      onError: (err) => {
+        toast.error(extractCartError(err));
+      }
+    });
   };
 
   return (
