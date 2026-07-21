@@ -161,10 +161,19 @@ function Pagination({ page, totalPages, onPageChange }: { page: number; totalPag
 }
 
 /* --- MENU SECTION --- */
-function MenuSection() {
+function MenuSection({
+  activeCategory,
+  setActiveCategory,
+  categories,
+  catLoading
+}: {
+  activeCategory: string;
+  setActiveCategory: React.Dispatch<React.SetStateAction<string>>;
+  categories: any;
+  catLoading: boolean;
+}) {
   const router = useRouter();
   const { isLoggedIn } = useAuthStore();
-  const [activeCategory, setActiveCategory] = React.useState('all');
   const [search, setSearch] = React.useState('');
   const [debouncedSearch, setDebouncedSearch] = React.useState('');
   const [page, setPage] = React.useState(1);
@@ -175,8 +184,6 @@ function MenuSection() {
   }, [search]);
 
   React.useEffect(() => { setPage(1); }, [activeCategory, debouncedSearch]);
-
-  const { data: categories, isLoading: catLoading } = useCategories();
 
   const queryParams: FoodsQueryParams = {
     page,
@@ -360,7 +367,7 @@ export default function HomeClient() {
       </section>
 
       {/* LIVE MENU GRID */}
-      <MenuSection />
+      <MenuSection activeCategory={activeCategory} setActiveCategory={setActiveCategory} categories={categories} catLoading={catLoading} />
 
       {/* TODAY'S SPECIAL */}
       <section className="bg-white py-16 px-6 border-t border-[#F0E6D8]">

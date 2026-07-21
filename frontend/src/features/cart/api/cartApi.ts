@@ -36,7 +36,7 @@ export interface CheckoutResult {
 }
 
 export const checkout = async (): Promise<CheckoutResult> => {
-  const { data } = await apiClient.post<ApiSuccess<CheckoutResult>>('/api/v1/checkout');
+  const { data } = await apiClient.post<ApiSuccess<CheckoutResult>>('/api/v1/cart/checkout');
   return data.data;
 };
 
