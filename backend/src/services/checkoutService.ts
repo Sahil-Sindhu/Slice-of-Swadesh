@@ -91,7 +91,7 @@ export class CheckoutService {
             const order = await this.createOrder(cart, notes, session);
 
             // 7. Create Payment Intent via PaymentService
-            const paymentIntent = await PaymentService.createPayment(order.orderNumber, customerId);
+            const paymentIntent = await PaymentService.createPayment(order.orderNumber, customerId, session);
 
             // Note: We do NOT clear the cart here anymore. Cart is only cleared
             // upon successful payment (which should be triggered by the frontend/webhook).

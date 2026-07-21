@@ -22,8 +22,8 @@ export class PaymentService {
     return new MockGateway();
   }
 
-  static async createPayment(orderId: string, customerId?: string): Promise<any> {
-    const order = await Order.findOne({ orderNumber: orderId, isDeleted: false });
+  static async createPayment(orderId: string, customerId?: string, session?: mongoose.ClientSession): Promise<any> {
+    const order = await Order.findOne({ orderNumber: orderId, isDeleted: { $ne: true } }).session(session || null);
     if (!order) {
       throw new NotFoundError("Order not found");
     }
@@ -46,7 +46,7 @@ export class PaymentService {
       amount: order.grandTotal,
       currency: "INR",
       status: PaymentStatus.CREATED
-    }]);
+    }], { session });
 
     const gateway = this.getGateway();
     const gatewayResponse = await gateway.createPayment(payment);
