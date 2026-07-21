@@ -248,7 +248,6 @@ export default function RegisterPage() {
                   className="sr-only"
                 />
                 <div
-                  onClick={() => setAgreed((a) => !a)}
                   className={`w-4 h-4 rounded border transition-all cursor-pointer flex items-center justify-center ${agreed ? 'bg-primary border-primary' : 'border-border bg-card'}`}
                 >
                   {agreed && (
