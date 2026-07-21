@@ -68,7 +68,6 @@ const invoiceSchema = new Schema<IInvoiceDocument>(
 
 // Indexes
 invoiceSchema.index({ orderId: 1 });
-invoiceSchema.index({ invoiceNumber: 1 });
 invoiceSchema.index({ customerId: 1 });
 
 export const Invoice = mongoose.model<IInvoiceDocument>('Invoice', invoiceSchema);
