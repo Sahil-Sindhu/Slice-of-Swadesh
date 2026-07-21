@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import { AuthGuard } from '../../components/shared/AuthGuard';
 import { useAuthStore } from '../../store/authStore';
 import { useCartStore } from '../../store/cartStore';
+import { useProfile } from '../../features/profile/hooks/useProfile';
+import { addAddress } from '../../features/auth/api/authApi';
 
 import { 
   useCart, 
@@ -48,6 +50,18 @@ function CartContent() {
   // ── Data fetching ──────────────────────────────────────────────────
   const { data: cart, isLoading, isError, refetch } = useCart();
 
+  // ── Profile / Address fetching ──────────────────────────────────────
+  const { data: profile, refetch: refetchProfile } = useProfile();
+  const [selectedAddressId, setSelectedAddressId] = React.useState<string>('');
+
+  // ── Add address form state ──────────────────────────────────────────
+  const [showAddAddress, setShowAddAddress] = React.useState(false);
+  const [newAddressLabel, setNewAddressLabel] = React.useState<'Home' | 'Office' | 'Other'>('Home');
+  const [newAddressStreet, setNewAddressStreet] = React.useState('');
+  const [newAddressCity, setNewAddressCity] = React.useState('');
+  const [newAddressZip, setNewAddressZip] = React.useState('');
+  const [addingAddress, setAddingAddress] = React.useState(false);
+
   // ── Mutations ──────────────────────────────────────────────────────
   const { mutate: updateItem, isPending: updating, variables: updateVars } = useUpdateCartItem();
   const { mutate: removeItem, isPending: removing, variables: removeVars } = useRemoveCartItem();
@@ -58,6 +72,14 @@ function CartContent() {
   const [orderType, setOrderType] = React.useState<'Delivery' | 'Takeaway' | 'DineIn'>('Delivery');
   const [tableNumber, setTableNumber] = React.useState('');
   const [orderResult, setOrderResult] = React.useState<CheckoutResult | null>(null);
+
+  // Auto-select default/first address
+  React.useEffect(() => {
+    if (profile?.addresses?.length) {
+      const defaultAddr = profile.addresses.find((a: any) => a.isDefault) ?? profile.addresses[0];
+      setSelectedAddressId(defaultAddr._id);
+    }
+  }, [profile]);
 
   // ── Handlers ───────────────────────────────────────────────────────
   const handleQuantityChange = (itemId: string, quantity: number) => {
@@ -79,10 +101,62 @@ function CartContent() {
     });
   };
 
+  const handleAddAddress = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newAddressStreet.trim() || !newAddressCity.trim() || !newAddressZip.trim()) {
+      showToast('Please fill out all address fields.');
+      return;
+    }
+    setAddingAddress(true);
+    try {
+      const updatedUser = await addAddress({
+        label: newAddressLabel,
+        street: newAddressStreet,
+        city: newAddressCity,
+        zipCode: newAddressZip,
+        isDefault: !profile?.addresses?.length,
+      });
+      showToast('Address added successfully!', 'success');
+      await refetchProfile();
+      setShowAddAddress(false);
+      setNewAddressStreet('');
+      setNewAddressCity('');
+      setNewAddressZip('');
+      if (updatedUser?.addresses?.length) {
+        const last = updatedUser.addresses[updatedUser.addresses.length - 1];
+        setSelectedAddressId(last._id);
+      }
+    } catch (err: any) {
+      showToast(err.response?.data?.message || 'Failed to add address');
+    } finally {
+      setAddingAddress(false);
+    }
+  };
+
   const handleCheckout = (paymentMethod: string) => {
-    // We pass paymentMethod to placeOrder if the backend API supports it.
-    // For now, the backend uses process.env.PAYMENT_GATEWAY, but we handle the frontend redirect.
-    placeOrder(undefined, {
+    let notes = '';
+    if (orderType === 'Delivery') {
+      if (!selectedAddressId) {
+        showToast('Please select or add a delivery address.');
+        return;
+      }
+      const addr = profile?.addresses?.find((a: any) => a._id === selectedAddressId);
+      if (!addr) {
+        showToast('Selected address not found.');
+        return;
+      }
+      notes = `Deliver to: [${addr.label}] ${addr.street}, ${addr.city} - ${addr.zipCode}`;
+    } else if (orderType === 'DineIn') {
+      if (!tableNumber.trim()) {
+        showToast('Please enter your table number.');
+        return;
+      }
+      notes = `Dine In: ${tableNumber}`;
+    } else {
+      notes = 'Takeaway Order';
+    }
+
+    placeOrder(notes, {
       onSuccess: (result) => {
         if (result.paymentIntent?.payment?.paymentId) {
           // Clear cart state locally after checkout initiates
@@ -220,6 +294,131 @@ function CartContent() {
                     </button>
                   ))}
                 </div>
+                {orderType === 'Delivery' && (
+                  <div style={{ marginTop: 20, borderTop: '1.5px dashed #F0E6D8', paddingTop: 20 }}>
+                    <h4 style={{ fontSize: 13, fontWeight: 800, color: '#1A1208', marginBottom: 12, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                      Delivery Address
+                    </h4>
+                    
+                    {profile?.addresses && profile.addresses.length > 0 ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 }}>
+                        {profile.addresses.map((addr: any) => (
+                          <label
+                            key={addr._id}
+                            style={{
+                              display: 'flex', alignItems: 'center',
+                              padding: '14px 16px',
+                              borderRadius: 16, border: '2px solid', cursor: 'pointer',
+                              borderColor: selectedAddressId === addr._id ? '#E8441A' : '#F0E6D8',
+                              background: selectedAddressId === addr._id ? '#FFF5F0' : 'white',
+                              transition: 'all 0.2s'
+                            }}
+                          >
+                            <input
+                              type="radio"
+                              name="deliveryAddress"
+                              value={addr._id}
+                              checked={selectedAddressId === addr._id}
+                              onChange={() => setSelectedAddressId(addr._id)}
+                              style={{ marginRight: 12, accentColor: '#E8441A' }}
+                            />
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                              <span style={{ fontSize: 13, fontWeight: 800, color: '#1A1208', display: 'flex', alignItems: 'center', gap: 6 }}>
+                                {addr.label}
+                                {addr.isDefault && (
+                                  <span style={{ fontSize: 9, background: '#FFF0EB', color: '#E8441A', padding: '2px 8px', borderRadius: 6, fontWeight: 700 }}>DEFAULT</span>
+                                )}
+                              </span>
+                              <span style={{ fontSize: 12, color: '#8C6E5A', fontWeight: 500 }}>
+                                {addr.street}, {addr.city} - {addr.zipCode}
+                              </span>
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                    ) : (
+                      <div style={{ padding: '16px 20px', borderRadius: 16, background: '#FFFBF5', border: '1.5px solid #F0E6D8', color: '#8C6E5A', fontSize: 13, marginBottom: 16, fontWeight: 500 }}>
+                        No delivery addresses saved. Add one below to place your order.
+                      </div>
+                    )}
+
+                    {!showAddAddress ? (
+                      <button
+                        onClick={() => setShowAddAddress(true)}
+                        style={{
+                          background: 'white', color: '#E8441A', border: '1.5px solid #E8441A',
+                          borderRadius: 12, padding: '8px 16px', fontSize: 12, fontWeight: 700,
+                          cursor: 'pointer', transition: 'all 0.2s'
+                        }}
+                      >
+                        + Add New Address
+                      </button>
+                    ) : (
+                      <form onSubmit={handleAddAddress} style={{ background: '#FFFBF5', padding: 20, borderRadius: 20, border: '1.5px solid #F0E6D8', marginTop: 12, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                        <div style={{ display: 'flex', justifyContext: 'space-between', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F0E6D8', paddingBottom: 10 }}>
+                          <span style={{ fontSize: 12, fontWeight: 800, color: '#1A1208' }}>NEW ADDRESS</span>
+                          <button type="button" onClick={() => setShowAddAddress(false)} style={{ background: 'none', border: 'none', color: '#B5957D', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>Cancel</button>
+                        </div>
+                        
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          {(['Home', 'Office', 'Other'] as const).map(lbl => (
+                            <button
+                              key={lbl}
+                              type="button"
+                              onClick={() => setNewAddressLabel(lbl)}
+                              style={{
+                                flex: 1, padding: '6px 12px', borderRadius: 10, fontSize: 11, fontWeight: 700, cursor: 'pointer',
+                                background: newAddressLabel === lbl ? '#E8441A' : 'white',
+                                color: newAddressLabel === lbl ? 'white' : '#4A3728',
+                                border: newAddressLabel === lbl ? '1.5px solid #E8441A' : '1.5px solid #F0E6D8',
+                              }}
+                            >
+                              {lbl}
+                            </button>
+                          ))}
+                        </div>
+
+                        <input
+                          placeholder="Street Address (e.g. 123 Main St)"
+                          value={newAddressStreet}
+                          onChange={e => setNewAddressStreet(e.target.value)}
+                          required
+                          style={{ padding: '10px 14px', borderRadius: 10, border: '1.5px solid #F0E6D8', background: 'white', fontSize: 13, color: '#1A1208', outline: 'none' }}
+                        />
+
+                        <div style={{ display: 'flex', gap: 10 }}>
+                          <input
+                            placeholder="City"
+                            value={newAddressCity}
+                            onChange={e => setNewAddressCity(e.target.value)}
+                            required
+                            style={{ flex: 1, padding: '10px 14px', borderRadius: 10, border: '1.5px solid #F0E6D8', background: 'white', fontSize: 13, color: '#1A1208', outline: 'none' }}
+                          />
+                          <input
+                            placeholder="Zip Code"
+                            value={newAddressZip}
+                            onChange={e => setNewAddressZip(e.target.value)}
+                            required
+                            style={{ width: 100, padding: '10px 14px', borderRadius: 10, border: '1.5px solid #F0E6D8', background: 'white', fontSize: 13, color: '#1A1208', outline: 'none' }}
+                          />
+                        </div>
+
+                        <button
+                          type="submit"
+                          disabled={addingAddress}
+                          style={{
+                            background: '#E8441A', color: 'white', border: 'none',
+                            borderRadius: 12, padding: '10px 16px', fontSize: 12, fontWeight: 700,
+                            cursor: 'pointer', transition: 'all 0.2s', marginTop: 6,
+                            opacity: addingAddress ? 0.7 : 1
+                          }}
+                        >
+                          {addingAddress ? 'Saving Address...' : 'Save & Select Address'}
+                        </button>
+                      </form>
+                    )}
+                  </div>
+                )}
                 {orderType === 'DineIn' && (
                   <div style={{ marginTop: 16 }}>
                     <label htmlFor="table" style={{ fontSize: 11, fontWeight: 700, color: '#B5957D', textTransform: 'uppercase', letterSpacing: 1.2, display: 'block', marginBottom: 6 }}>

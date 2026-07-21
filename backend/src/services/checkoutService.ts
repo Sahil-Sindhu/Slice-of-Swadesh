@@ -46,7 +46,7 @@ export class CheckoutService {
         cart.grandTotal = Math.max(0, cart.subtotal + cart.tax - cart.discount);
     }
 
-    private static async createOrder(cart: ICart, session: mongoose.ClientSession) {
+    private static async createOrder(cart: ICart, notes: string | undefined, session: mongoose.ClientSession) {
         // Map cart items to the input format of placeOrder
         const items = cart.items.map(item => ({
             foodVariant: item.variant.toString(),
@@ -56,6 +56,7 @@ export class CheckoutService {
         return await OrderService.placeOrder({
             customer: cart.customer.toString(),
             items,
+            notes,
             createdBy: cart.customer.toString()
         }, session);
     }
@@ -64,7 +65,7 @@ export class CheckoutService {
         await CartService.clearCart(customerId, session);
     }
 
-    static async checkout(customerId: string) {
+    static async checkout(customerId: string, notes?: string) {
         // 1. Load Cart
         const cart = await CartService.getCart(customerId);
 
@@ -87,7 +88,7 @@ export class CheckoutService {
             await cart.save({ session });
 
             // 6. Create Order (Status: Pending)
-            const order = await this.createOrder(cart, session);
+            const order = await this.createOrder(cart, notes, session);
 
             // 7. Create Payment Intent via PaymentService
             const paymentIntent = await PaymentService.createPayment(order.orderNumber, customerId);

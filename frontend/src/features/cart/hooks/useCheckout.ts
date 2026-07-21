@@ -6,8 +6,8 @@ export function useCheckout() {
   const { clearLocalCart } = useCartStore();
   const queryClient = useQueryClient();
 
-  return useMutation<CheckoutResult, Error>({
-    mutationFn: checkout,
+  return useMutation<CheckoutResult, Error, string | undefined>({
+    mutationFn: (notes) => checkout(notes),
     onSuccess: () => {
       // Clear Zustand store immediately — badge goes to 0
       clearLocalCart();

@@ -9,7 +9,8 @@ export const checkout = async (req: AuthRequest, res: Response) => {
     try {
         if (!req.user) throw new UnauthorizedError("Not authenticated");
         
-        const { order, paymentIntent } = await CheckoutService.checkout(req.user._id.toString());
+        const { notes } = req.body;
+        const { order, paymentIntent } = await CheckoutService.checkout(req.user._id.toString(), notes);
         
         return sendSuccess(res, "Checkout completed successfully", {
             orderNumber: order.orderNumber,

@@ -37,3 +37,19 @@ export const getProfile = async (): Promise<ApiUser> => {
   );
   return data.data.user;
 };
+
+export interface AddAddressPayload {
+  label: 'Home' | 'Office' | 'Other';
+  street: string;
+  city: string;
+  zipCode: string;
+  isDefault?: boolean;
+}
+
+export const addAddress = async (payload: AddAddressPayload): Promise<ApiUser> => {
+  const { data } = await apiClient.post<ApiSuccess<{ user: ApiUser }>>(
+    '/api/v1/auth/profile/address',
+    payload
+  );
+  return data.data.user;
+};

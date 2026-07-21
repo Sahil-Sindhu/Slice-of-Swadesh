@@ -119,7 +119,7 @@ export class OrderService {
             if (data.customer) {
                 const customerExists = await User.exists({
                     _id: data.customer,
-                    isDeleted: false
+                    isDeleted: { $ne: true }
                 }).session(session);
 
                 if (!customerExists) {

@@ -35,8 +35,8 @@ export interface CheckoutResult {
   paymentIntent?: any;
 }
 
-export const checkout = async (): Promise<CheckoutResult> => {
-  const { data } = await apiClient.post<ApiSuccess<CheckoutResult>>('/api/v1/cart/checkout');
+export const checkout = async (notes?: string): Promise<CheckoutResult> => {
+  const { data } = await apiClient.post<ApiSuccess<CheckoutResult>>('/api/v1/cart/checkout', { notes });
   return data.data;
 };
 
