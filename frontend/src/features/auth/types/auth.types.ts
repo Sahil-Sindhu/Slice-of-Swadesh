@@ -9,6 +9,14 @@ export interface ApiUser {
   role: 'user' | 'admin' | 'staff' | 'delivery' | 'manager' | 'customer' | 'chef' | 'superadmin' | 'cashier';
   createdAt: string;
   updatedAt: string;
+  addresses?: Array<{
+    _id: string;
+    label: 'Home' | 'Office' | 'Other';
+    street: string;
+    city: string;
+    zipCode: string;
+    isDefault: boolean;
+  }>;
 }
 
 export interface AuthResponse {

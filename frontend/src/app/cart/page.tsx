@@ -355,7 +355,7 @@ function CartContent() {
                       </button>
                     ) : (
                       <form onSubmit={handleAddAddress} style={{ background: '#FFFBF5', padding: 20, borderRadius: 20, border: '1.5px solid #F0E6D8', marginTop: 12, display: 'flex', flexDirection: 'column', gap: 12 }}>
-                        <div style={{ display: 'flex', justifyContext: 'space-between', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F0E6D8', paddingBottom: 10 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F0E6D8', paddingBottom: 10 }}>
                           <span style={{ fontSize: 12, fontWeight: 800, color: '#1A1208' }}>NEW ADDRESS</span>
                           <button type="button" onClick={() => setShowAddAddress(false)} style={{ background: 'none', border: 'none', color: '#B5957D', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>Cancel</button>
                         </div>
