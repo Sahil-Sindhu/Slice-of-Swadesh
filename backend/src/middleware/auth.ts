@@ -8,12 +8,17 @@ export interface AuthRequest extends Request {
 
 export const authenticate = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ status: 'error', message: 'No credentials provided' });
+    let token = req.cookies?.['swadesh-token'];
+    if (!token) {
+      const authHeader = req.headers.authorization;
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        token = authHeader.split(' ')[1];
+      }
     }
 
-    const token = authHeader.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ status: 'error', message: 'No credentials provided' });
+    }
     const decoded = verifyToken(token);
 
     const user = await User.findById(decoded.id);

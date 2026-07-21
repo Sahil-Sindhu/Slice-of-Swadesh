@@ -9,10 +9,8 @@ export function useRegister() {
   return useMutation({
     mutationFn: (payload: RegisterPayload) => registerUser(payload),
     onSuccess: (data) => {
-      // Auto-login after successful registration
-      setAuth(data.token, data.user);
-      // Write token to cookie for Next.js middleware
-      document.cookie = `swadesh-token=${data.token}; path=/; max-age=${60 * 60 * 24}; SameSite=Lax`;
+      // Auto-login after successful registration (cookie is set automatically by backend via HttpOnly)
+      setAuth(data.user);
     },
   });
 }

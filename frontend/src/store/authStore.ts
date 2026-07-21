@@ -1,15 +1,15 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { ApiUser } from '@/features/auth/types/auth.types';
+import { logoutUser } from '@/features/auth/api/authApi';
 
 // ─── State Shape ─────────────────────────────────────────────────────────────
 interface AuthState {
   isLoggedIn: boolean;
-  token: string | null;
   user: ApiUser | null;
 
   // Actions
-  setAuth: (token: string, user: ApiUser) => void;
+  setAuth: (user: ApiUser) => void;
   setUser: (user: ApiUser) => void;
   logout: () => void;
 
@@ -22,20 +22,19 @@ export const useAuthStore = create<AuthState>()(
   persist<AuthState>(
     (set) => ({
       isLoggedIn: false,
-      token: null,
       user: null,
 
-      setAuth: (token: string, user: ApiUser) =>
-        set({ isLoggedIn: true, token, user }),
+      setAuth: (user: ApiUser) =>
+        set({ isLoggedIn: true, user }),
 
       setUser: (user: ApiUser) =>
         set({ user }),
 
       logout: () => {
-        if (typeof document !== 'undefined') {
-          document.cookie = 'swadesh-token=; Max-Age=0; path=/';
-        }
-        set({ isLoggedIn: false, token: null, user: null });
+        // Destroy session on the backend and clear the secure cookie
+        logoutUser().catch((err) => console.error('Logout API error:', err));
+        // Immediately clear auth state in the frontend
+        set({ isLoggedIn: false, user: null });
       },
 
       // Legacy alias — kept for backwards compatibility
@@ -47,7 +46,6 @@ export const useAuthStore = create<AuthState>()(
       // Only persist data fields, not action functions
       partialize: (state: AuthState) => ({
         isLoggedIn: state.isLoggedIn,
-        token: state.token,
         user: state.user,
       }) as AuthState,
     }

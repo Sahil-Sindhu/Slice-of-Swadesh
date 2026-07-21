@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import crypto from 'crypto';
 import { User } from '../models/User';
 import { Session } from '../models/Session';
 import { AuthRequest } from '../middleware/auth';
@@ -53,6 +54,14 @@ export const register = async (req: Request, res: Response) => {
       emailTemplate: "welcome"
     }).catch(err => console.error("Notification failed", err));
 
+    res.cookie('swadesh-token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+      path: '/'
+    });
+
     return sendSuccess(
       res,
       "User registered successfully",
@@ -94,6 +103,14 @@ export const login = async (req: Request, res: Response) => {
     });
     await session.save();
 
+    res.cookie('swadesh-token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+      path: '/'
+    });
+
     return sendSuccess(
       res,
       "Logged in successfully",
@@ -118,11 +135,21 @@ export const logout = async (req: AuthRequest, res: Response) => {
   try {
     if (!req.user) throw new UnauthorizedError('Not authenticated');
     
-    const authHeader = req.headers.authorization;
-    if (authHeader) {
-      const token = authHeader.split(' ')[1];
+    let token = req.cookies?.['swadesh-token'];
+    if (!token && req.headers.authorization) {
+      token = req.headers.authorization.split(' ')[1];
+    }
+    
+    if (token) {
       await Session.findOneAndDelete({ token });
     }
+
+    res.clearCookie('swadesh-token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/'
+    });
 
     return sendSuccess(res, 'Logged out successfully');
   } catch (error) {
@@ -189,8 +216,14 @@ export const forgotPassword = async (req: Request, res: Response) => {
       return sendSuccess(res, 'If your email is registered, a password reset link has been sent.');
     }
 
-    // Mock reset token
-    const resetToken = "mock_reset_token_123";
+    // Generate secure reset token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    // Hash and set on user record
+    user.resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+    user.resetPasswordExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+
+    await user.save();
+
     const resetUrl = `${process.env.FRONTEND_URL || "http://localhost:3000"}/reset-password?token=${resetToken}`;
 
     NotificationService.send({
@@ -204,6 +237,37 @@ export const forgotPassword = async (req: Request, res: Response) => {
     }).catch(err => console.error("Notification failed", err));
 
     return sendSuccess(res, 'If your email is registered, a password reset link has been sent.');
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
+export const resetPassword = async (req: Request, res: Response) => {
+  try {
+    const { token, password } = req.body;
+    if (!token || !password) {
+      throw new ValidationError('Token and password are required');
+    }
+
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+    const user = await User.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpires: { $gt: new Date() },
+    });
+
+    if (!user) {
+      throw new ValidationError('Password reset token is invalid or has expired');
+    }
+
+    // Set new password (pre-save hook will hash it automatically)
+    user.passwordHash = password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+
+    await user.save();
+
+    return sendSuccess(res, 'Password has been reset successfully');
   } catch (error) {
     return handleError(res, error);
   }
