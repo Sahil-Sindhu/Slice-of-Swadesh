@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Invoice {{invoiceNumber}}</title>
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: white; color: #1A1208; margin: 0; padding: 0; }
+    .invoice-box { max-width: 800px; margin: auto; font-size: 14px; line-height: 24px; color: #1A1208; }
+    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; }
+    .logo { font-size: 24px; font-weight: 900; color: #E8441A; }
+    .title { text-align: right; }
+    .title h1 { font-size: 32px; font-weight: 900; margin: 0; color: #1A1208; }
+    .title p { margin: 0; color: #8C6E5A; }
+    
+    .info-section { display: flex; justify-content: space-between; margin-bottom: 40px; }
+    .info-block { width: 48%; }
+    .info-block h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; color: #8C6E5A; margin-bottom: 5px; }
+    .info-block p { margin: 0; font-weight: 600; }
+    .info-block span { display: block; font-weight: normal; color: #4A3728; }
+    
+    table { width: 100%; border-collapse: collapse; margin-bottom: 40px; }
+    th { text-align: left; padding: 12px; border-bottom: 2px solid #F0E6D8; font-size: 12px; text-transform: uppercase; color: #8C6E5A; }
+    td { padding: 12px; border-bottom: 1px solid #F0E6D8; }
+    th.right, td.right { text-align: right; }
+    
+    .totals { width: 40%; margin-left: auto; }
+    .total-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #F0E6D8; }
+    .total-row:last-child { border-bottom: none; font-weight: 900; font-size: 18px; color: #E8441A; border-top: 2px solid #F0E6D8; margin-top: 5px; padding-top: 10px; }
+    
+    .footer { margin-top: 50px; text-align: center; font-size: 12px; color: #B5957D; border-top: 1px solid #F0E6D8; padding-top: 20px; }
+  </style>
+</head>
+<body>
+  <div class="invoice-box">
+    <div class="header">
+      <div class="logo">🍕 Slice of Swadesh</div>
+      <div class="title">
+        <h1>INVOICE</h1>
+        <p>#{{invoiceNumber}}</p>
+        <p>Date: {{date}}</p>
+      </div>
+    </div>
+    
+    <div class="info-section">
+      <div class="info-block">
+        <h3>Billed To</h3>
+        <p>{{customerName}}</p>
+        <span>{{customerEmail}}</span>
+      </div>
+      <div class="info-block" style="text-align: right;">
+        <h3>Order Reference</h3>
+        <p>{{orderId}}</p>
+      </div>
+    </div>
+    
+    <table>
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th class="right">Qty</th>
+          <th class="right">Price</th>
+          <th class="right">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each items}}
+        <tr>
+          <td><strong>{{name}}</strong></td>
+          <td class="right">{{quantity}}</td>
+          <td class="right">{{formatCurrency price}}</td>
+          <td class="right">{{formatCurrency total}}</td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+    
+    <div class="totals">
+      <div class="total-row">
+        <span>Subtotal</span>
+        <span>{{formatCurrency subtotal}}</span>
+      </div>
+      <div class="total-row">
+        <span>Delivery Fee</span>
+        <span>{{formatCurrency deliveryFee}}</span>
+      </div>
+      <div class="total-row">
+        <span>GST / Tax</span>
+        <span>{{formatCurrency tax}}</span>
+      </div>
+      <div class="total-row">
+        <span>Grand Total</span>
+        <span>{{formatCurrency grandTotal}}</span>
+      </div>
+    </div>
+    
+    <div class="footer">
+      Thank you for dining with Slice of Swadesh! GSTIN: 27AABCU9603R1ZM<br>
+      For any queries, contact support@sliceofswadesh.com
+    </div>
+  </div>
+</body>
+</html>

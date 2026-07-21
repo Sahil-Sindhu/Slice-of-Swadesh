@@ -1,0 +1,157 @@
+@import "tailwindcss";
+
+/* ── Disable OS dark mode — we use our own theme ── */
+@media (prefers-color-scheme: dark) {
+  :root { color-scheme: light; }
+}
+
+:root {
+  color-scheme: light;
+
+  /* Brand palette */
+  --bg:          #FFFBF5;
+  --bg-2:        #FFF5E9;
+  --bg-3:        #FFECD6;
+  --surface:     #FFFFFF;
+  --surface-2:   #FDF8F2;
+
+  --text:        #1A1208;
+  --text-2:      #4A3728;
+  --text-3:      #8C6E5A;
+  --text-muted:  #B5957D;
+
+  --primary:     #E8441A;
+  --primary-2:   #C93B15;
+  --primary-3:   #FF6B3D;
+  --primary-bg:  #FFF0EB;
+
+  --saffron:     #F59E0B;
+  --saffron-2:   #D97706;
+  --green:       #16A34A;
+  --green-bg:    #DCFCE7;
+
+  --border:      #F0E6D8;
+  --border-2:    #E5D5C0;
+  --shadow:      rgba(232, 68, 26, 0.08);
+  --shadow-lg:   rgba(26, 18, 8, 0.12);
+}
+
+@theme {
+  --color-bg:        var(--bg);
+  --color-bg-2:      var(--bg-2);
+  --color-bg-3:      var(--bg-3);
+  --color-surface:   var(--surface);
+  --color-surface-2: var(--surface-2);
+
+  --color-text:      var(--text);
+  --color-text-2:    var(--text-2);
+  --color-text-3:    var(--text-3);
+  --color-muted:     var(--text-muted);
+
+  --color-primary:   var(--primary);
+  --color-primary-2: var(--primary-2);
+  --color-primary-3: var(--primary-3);
+  --color-primary-bg: var(--primary-bg);
+
+  --color-saffron:   var(--saffron);
+  --color-green:     var(--green);
+  --color-green-bg:  var(--green-bg);
+
+  --color-border:    var(--border);
+  --color-border-2:  var(--border-2);
+
+  --font-sans:    var(--font-inter), system-ui, sans-serif;
+  --font-display: var(--font-outfit), system-ui, sans-serif;
+  --font-heading: var(--font-poppins), system-ui, sans-serif;
+}
+
+/* ── Base ── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  background: var(--bg);
+  color: var(--text);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: rgba(232, 68, 26, 0.18);
+  color: var(--text);
+}
+
+/* ── Autofill override ── */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #fff inset !important;
+  -webkit-text-fill-color: var(--text) !important;
+  caret-color: var(--text);
+}
+
+/* ── Animations ── */
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33%       { transform: translateY(-12px) rotate(2deg); }
+  66%       { transform: translateY(-6px) rotate(-1deg); }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes pulse-ring {
+  0%   { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(232,68,26,0.4); }
+  70%  { transform: scale(1);    box-shadow: 0 0 0 12px rgba(232,68,26,0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(232,68,26,0); }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.animate-float        { animation: float 5s ease-in-out infinite; }
+.animate-slide-up     { animation: slideUp 0.6s ease-out forwards; }
+.animate-fade-in      { animation: fadeIn 0.5s ease-out forwards; }
+.animate-pulse-ring   { animation: pulse-ring 2s ease-in-out infinite; }
+.animate-spin-slow    { animation: spin-slow 30s linear infinite; }
+
+/* ── Utility classes ── */
+.gradient-brand {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--saffron) 100%);
+}
+.gradient-hero {
+  background: linear-gradient(135deg, #FF6B35 0%, #E8441A 40%, #C93B15 100%);
+}
+.text-gradient {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--saffron) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.glass-card {
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.6);
+}
+.card-hover {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 50px var(--shadow-lg);
+}

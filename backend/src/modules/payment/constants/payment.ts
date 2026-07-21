@@ -1,0 +1,15 @@
+export enum PaymentStatus {
+  PENDING = "PENDING",
+  CREATED = "CREATED",
+  AUTHORIZED = "AUTHORIZED",
+  CAPTURED = "CAPTURED",
+  FAILED = "FAILED",
+  REFUNDED = "REFUNDED",
+  PARTIALLY_REFUNDED = "PARTIALLY_REFUNDED",
+  CANCELLED = "CANCELLED",
+}
+
+export enum PaymentGatewayEnum {
+  MOCK = "MOCK",
+  RAZORPAY = "RAZORPAY",
+}
