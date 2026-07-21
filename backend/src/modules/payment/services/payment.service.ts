@@ -9,6 +9,7 @@ import { OrderService } from "../../../services/orderService";
 import { NotFoundError } from "../../../errors/NotFoundError";
 import { ValidationError } from "../../../errors/ValidationError";
 import mongoose from "mongoose";
+import { logger } from "../../../utils/logger";
 import { NotificationService } from "../../notification/services/notification.service";
 import { NotificationType, NotificationChannel } from "../../notification/constants/notification";
 
@@ -95,7 +96,7 @@ export class PaymentService {
             title: "Payment Successful",
             message: `Your payment of ₹${payment.amount} for order ${payment.orderId} was successful.`,
             metadata: { paymentId, orderId: payment.orderId }
-          }).catch(err => console.error("Notification failed", err));
+          }).catch(err => logger.error("Notification failed", { error: err.message }));
         } else {
           NotificationService.send({
             userId: payment.customerId,
@@ -104,7 +105,7 @@ export class PaymentService {
             title: "Payment Failed",
             message: `Your payment of ₹${payment.amount} for order ${payment.orderId} failed.`,
             metadata: { paymentId, orderId: payment.orderId }
-          }).catch(err => console.error("Notification failed", err));
+          }).catch(err => logger.error("Notification failed", { error: err.message }));
         }
       }
 
@@ -241,7 +242,7 @@ export class PaymentService {
           title: "Refund Processed",
           message: `A refund of ₹${amount || payment.amount} for order ${payment.orderId} has been initiated.`,
           metadata: { paymentId, orderId: payment.orderId }
-        }).catch(err => console.error("Notification failed", err));
+        }).catch(err => logger.error("Notification failed", { error: err.message }));
       }
 
       return payment.toJSON();

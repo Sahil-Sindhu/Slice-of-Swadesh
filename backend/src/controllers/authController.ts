@@ -3,8 +3,9 @@ import crypto from 'crypto';
 import { User } from '../models/User';
 import { Session } from '../models/Session';
 import { AuthRequest } from '../middleware/auth';
-import { generateToken } from '../utils/jwt';
+import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/jwt';
 import { sendSuccess } from '../utils/response';
+import { logger } from '../utils/logger';
 import { handleError } from '../utils/errorHandler';
 import { ValidationError } from '../errors/ValidationError';
 import { UnauthorizedError } from '../errors/UnauthorizedError';
@@ -31,15 +32,16 @@ export const register = async (req: Request, res: Response) => {
 
     await user.save();
 
-    const token = generateToken(user._id.toString(), user.role);
+    const accessToken = generateAccessToken(user._id.toString(), user.role);
+    const refreshToken = generateRefreshToken(user._id.toString(), user.role);
 
-    // Save Session
+    // Save Session with the Refresh Token (expires in 7 days)
     const session = new Session({
       userId: user._id,
-      token,
+      token: refreshToken,
       deviceInfo: req.headers['user-agent'] || 'Unknown Device',
       ipAddress: req.ip || '127.0.0.1',
-      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 1 day
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
     });
     await session.save();
 
@@ -52,13 +54,23 @@ export const register = async (req: Request, res: Response) => {
       message: "We're glad to have you! Here's a ₹150 welcome coupon.",
       metadata: { couponCode: "WELCOME150" },
       emailTemplate: "welcome"
-    }).catch(err => console.error("Notification failed", err));
+    }).catch(err => logger.error("Welcome notification failed", { error: err.message }));
 
-    res.cookie('swadesh-token', token, {
+    // Set Access Token Cookie (15 mins)
+    res.cookie('swadesh-token', accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 24 * 60 * 60 * 1000, // 1 day
+      maxAge: 15 * 60 * 1000, // 15 mins
+      path: '/'
+    });
+
+    // Set Refresh Token Cookie (7 days)
+    res.cookie('swadesh-refresh', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       path: '/'
     });
 
@@ -66,7 +78,7 @@ export const register = async (req: Request, res: Response) => {
       res,
       "User registered successfully",
       {
-        token,
+        token: accessToken,
         user: {
           id: user._id,
           email: user.email,
@@ -92,22 +104,33 @@ export const login = async (req: Request, res: Response) => {
       throw new UnauthorizedError('Invalid email or password');
     }
 
-    const token = generateToken(user._id.toString(), user.role);
+    const accessToken = generateAccessToken(user._id.toString(), user.role);
+    const refreshToken = generateRefreshToken(user._id.toString(), user.role);
 
     const session = new Session({
       userId: user._id,
-      token,
+      token: refreshToken,
       deviceInfo: req.headers['user-agent'] || 'Unknown Device',
       ipAddress: req.ip || '127.0.0.1',
-      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
     });
     await session.save();
 
-    res.cookie('swadesh-token', token, {
+    // Set Access Token Cookie (15 mins)
+    res.cookie('swadesh-token', accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 24 * 60 * 60 * 1000, // 1 day
+      maxAge: 15 * 60 * 1000, // 15 mins
+      path: '/'
+    });
+
+    // Set Refresh Token Cookie (7 days)
+    res.cookie('swadesh-refresh', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       path: '/'
     });
 
@@ -115,7 +138,7 @@ export const login = async (req: Request, res: Response) => {
       res,
       "Logged in successfully",
       {
-        token,
+        token: accessToken,
         user: {
           id: user._id,
           email: user.email,
@@ -135,16 +158,19 @@ export const logout = async (req: AuthRequest, res: Response) => {
   try {
     if (!req.user) throw new UnauthorizedError('Not authenticated');
     
-    let token = req.cookies?.['swadesh-token'];
-    if (!token && req.headers.authorization) {
-      token = req.headers.authorization.split(' ')[1];
-    }
-    
-    if (token) {
-      await Session.findOneAndDelete({ token });
+    const refreshToken = req.cookies?.['swadesh-refresh'];
+    if (refreshToken) {
+      await Session.findOneAndDelete({ token: refreshToken });
     }
 
     res.clearCookie('swadesh-token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/'
+    });
+
+    res.clearCookie('swadesh-refresh', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
@@ -234,7 +260,7 @@ export const forgotPassword = async (req: Request, res: Response) => {
       message: "You requested a password reset.",
       metadata: { resetUrl },
       emailTemplate: "forgotPassword"
-    }).catch(err => console.error("Notification failed", err));
+    }).catch(err => logger.error("Password reset notification failed", { error: err.message }));
 
     return sendSuccess(res, 'If your email is registered, a password reset link has been sent.');
   } catch (error) {
@@ -268,6 +294,63 @@ export const resetPassword = async (req: Request, res: Response) => {
     await user.save();
 
     return sendSuccess(res, 'Password has been reset successfully');
+  } catch (error) {
+    return handleError(res, error);
+  }
+};
+
+export const refreshToken = async (req: Request, res: Response) => {
+  try {
+    const rToken = req.cookies?.['swadesh-refresh'];
+    if (!rToken) {
+      throw new UnauthorizedError('No refresh token provided');
+    }
+
+    let decoded;
+    try {
+      decoded = verifyRefreshToken(rToken);
+    } catch (err) {
+      res.clearCookie('swadesh-token', { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', path: '/' });
+      res.clearCookie('swadesh-refresh', { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', path: '/' });
+      throw new UnauthorizedError('Invalid or expired refresh token');
+    }
+
+    const session = await Session.findOne({ token: rToken, isValid: true });
+    if (!session) {
+      // Invalidate all active sessions for this user (Reuse attack defense)
+      await Session.deleteMany({ userId: decoded.id });
+      res.clearCookie('swadesh-token', { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', path: '/' });
+      res.clearCookie('swadesh-refresh', { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', path: '/' });
+      throw new UnauthorizedError('Session invalid or reuse detected. Logging out of all devices.');
+    }
+
+    // Generate new tokens
+    const newAccessToken = generateAccessToken(decoded.id, decoded.role);
+    const newRefreshToken = generateRefreshToken(decoded.id, decoded.role);
+
+    // Rotate token in the Session model
+    session.token = newRefreshToken;
+    session.expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+    await session.save();
+
+    // Set new cookies
+    res.cookie('swadesh-token', newAccessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 15 * 60 * 1000, // 15 mins
+      path: '/'
+    });
+
+    res.cookie('swadesh-refresh', newRefreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      path: '/'
+    });
+
+    return sendSuccess(res, 'Token refreshed successfully', { token: newAccessToken });
   } catch (error) {
     return handleError(res, error);
   }

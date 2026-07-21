@@ -12,6 +12,7 @@ import { NotificationService } from "../modules/notification/services/notificati
 import { NotificationType, NotificationChannel } from "../modules/notification/constants/notification";
 import { RealtimeService } from "../modules/realtime/services/realtime.service";
 import { SocketEvent } from "../modules/realtime/constants/events";
+import { logger } from "../utils/logger";
 
 export class OrderService {
 
@@ -177,7 +178,7 @@ export class OrderService {
                     message: `Your order ${newOrder.orderNumber} has been placed successfully.`,
                     metadata: { orderId: newOrder.orderNumber },
                     emailTemplate: "orderPlaced"
-                }).catch(err => console.error("Notification failed", err));
+                }).catch(err => logger.error("Notification failed", { error: err.message }));
             }
 
             // Emit Realtime Event
@@ -278,7 +279,7 @@ export class OrderService {
                     message,
                     metadata: { orderId: order.orderNumber },
                     emailTemplate: template
-                }).catch(err => console.error("Notification failed", err));
+                }).catch(err => logger.error("Notification failed", { error: err.message }));
             }
 
             // Emit Realtime Event
@@ -332,7 +333,7 @@ export class OrderService {
                 message: `Your payment was successful and order ${order.orderNumber} is confirmed.`,
                 metadata: { orderId: order.orderNumber },
                 emailTemplate: "orderConfirmed"
-            }, session).catch(err => console.error("Notification failed", err));
+            }, session).catch(err => logger.error("Notification failed", { error: err.message }));
         }
     }
 

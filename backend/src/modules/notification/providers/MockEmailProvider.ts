@@ -2,6 +2,7 @@ import { EmailProvider, SendEmailOptions } from "./EmailProvider";
 import * as handlebars from "handlebars";
 import * as fs from "fs";
 import * as path from "path";
+import { logger } from "../../../utils/logger";
 
 export class MockEmailProvider implements EmailProvider {
   async sendEmail(options: SendEmailOptions): Promise<void> {
@@ -14,18 +15,16 @@ export class MockEmailProvider implements EmailProvider {
         html = compiled({ ...options.context, year: new Date().getFullYear(), frontendUrl: process.env.FRONTEND_URL || "http://localhost:3000" });
       }
     } catch (e) {
-      console.error("Template compilation failed:", e);
+      logger.error("Template compilation failed", { service: 'email', error: e instanceof Error ? e.message : String(e) });
     }
 
-    console.log(`\n================== MOCK EMAIL ==================`);
-    console.log(`To:      ${options.to}`);
-    console.log(`Subject: ${options.subject}`);
-    console.log(`Tpl:     ${options.template}`);
-    if (html) {
-      console.log(`Body (HTML length): ${html.length} chars (rendered)`);
-    } else {
-      console.log(`Context: ${JSON.stringify(options.context, null, 2)}`);
-    }
-    console.log(`================================================\n`);
+    logger.info("Mock email dispatched", {
+      service: 'email',
+      to: options.to,
+      subject: options.subject,
+      template: options.template,
+      bodyLength: html ? html.length : undefined,
+      context: html ? undefined : options.context
+    });
   }
 }

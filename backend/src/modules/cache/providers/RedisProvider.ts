@@ -1,5 +1,6 @@
 import Redis from "ioredis";
 import { CacheProvider } from "./CacheProvider";
+import { logger } from "../../../utils/logger";
 
 export class RedisProvider implements CacheProvider {
   private client: Redis;
@@ -16,7 +17,7 @@ export class RedisProvider implements CacheProvider {
     });
 
     this.client.on('error', (err) => {
-      console.error('[RedisProvider] Redis error:', err.message);
+      logger.error('Redis error', { service: 'redis', error: err.message });
     });
   }
 
@@ -25,7 +26,7 @@ export class RedisProvider implements CacheProvider {
       const data = await this.client.get(key);
       return data ? JSON.parse(data) : null;
     } catch (error) {
-      console.warn(`[RedisProvider] Failed to get key ${key}:`, error);
+      logger.warn(`Failed to get key ${key}`, { service: 'redis', error: error instanceof Error ? error.message : String(error) });
       return null;
     }
   }
@@ -39,7 +40,7 @@ export class RedisProvider implements CacheProvider {
         await this.client.set(key, stringValue);
       }
     } catch (error) {
-      console.warn(`[RedisProvider] Failed to set key ${key}:`, error);
+      logger.warn(`Failed to set key ${key}`, { service: 'redis', error: error instanceof Error ? error.message : String(error) });
     }
   }
 
@@ -47,7 +48,7 @@ export class RedisProvider implements CacheProvider {
     try {
       await this.client.del(key);
     } catch (error) {
-      console.warn(`[RedisProvider] Failed to delete key ${key}:`, error);
+      logger.warn(`Failed to delete key ${key}`, { service: 'redis', error: error instanceof Error ? error.message : String(error) });
     }
   }
 }

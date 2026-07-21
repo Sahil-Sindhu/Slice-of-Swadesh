@@ -1,5 +1,6 @@
 import { PaymentGateway } from "./PaymentGateway";
 import { IPaymentDocument } from "../models/Payment";
+import { logger } from "../../../utils/logger";
 
 export class MockGateway implements PaymentGateway {
   
@@ -23,16 +24,16 @@ export class MockGateway implements PaymentGateway {
 
   async capturePayment(payment: IPaymentDocument): Promise<void> {
     // Mock capture action
-    console.log(`[MockGateway] Capturing payment ${payment.paymentId}`);
+    logger.info(`[MockGateway] Capturing payment ${payment.paymentId}`, { service: 'payment' });
   }
 
   async refundPayment(payment: IPaymentDocument, amount?: number, notes?: string): Promise<void> {
     // Mock refund action
-    console.log(`[MockGateway] Refunding payment ${payment.paymentId} for amount ${amount || payment.amount}. Notes: ${notes}`);
+    logger.info(`[MockGateway] Refunding payment ${payment.paymentId} for amount ${amount || payment.amount}. Notes: ${notes}`, { service: 'payment' });
   }
 
   async cancelPayment(payment: IPaymentDocument, reason?: string): Promise<void> {
     // Mock cancel action
-    console.log(`[MockGateway] Cancelling payment ${payment.paymentId}. Reason: ${reason}`);
+    logger.info(`[MockGateway] Cancelling payment ${payment.paymentId}. Reason: ${reason}`, { service: 'payment' });
   }
 }

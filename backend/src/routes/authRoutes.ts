@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { register, login, logout, getProfile, updateProfile, addAddress, forgotPassword, resetPassword } from '../controllers/authController';
+import { register, login, logout, getProfile, updateProfile, addAddress, forgotPassword, resetPassword, refreshToken } from '../controllers/authController';
 import { authenticate } from '../middleware/auth';
 import { validateBody } from '../middleware/validate';
 import { registerSchema, loginSchema, updateProfileSchema, addAddressSchema } from '../dto/auth.dto';
@@ -14,5 +14,6 @@ router.put('/profile', authenticate, validateBody(updateProfileSchema), updatePr
 router.post('/profile/address', authenticate, validateBody(addAddressSchema), addAddress);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
+router.post('/refresh', refreshToken);
 
 export default router;

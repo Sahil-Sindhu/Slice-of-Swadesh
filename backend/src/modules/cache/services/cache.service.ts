@@ -1,6 +1,7 @@
 import { CacheProvider } from "../providers/CacheProvider";
 import { MemoryProvider } from "../providers/MemoryProvider";
 import { RedisProvider } from "../providers/RedisProvider";
+import { logger } from "../../../utils/logger";
 
 export class CacheService {
   private static provider: CacheProvider;
@@ -8,10 +9,10 @@ export class CacheService {
   static initialize() {
     if (!this.provider) {
       if (process.env.REDIS_URL) {
-        console.log("[CacheService] Initializing Redis provider...");
+        logger.info("Initializing Redis provider...", { service: 'cache' });
         this.provider = new RedisProvider(process.env.REDIS_URL);
       } else {
-        console.log("[CacheService] REDIS_URL not found. Falling back to Memory provider...");
+        logger.info("REDIS_URL not found. Falling back to Memory provider...", { service: 'cache' });
         this.provider = new MemoryProvider();
       }
     }

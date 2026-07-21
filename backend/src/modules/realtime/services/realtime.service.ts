@@ -2,6 +2,7 @@ import { Server as SocketIOServer } from "socket.io";
 import { Server as HttpServer } from "http";
 import { socketAuthMiddleware } from "../middleware/socketAuth";
 import { SocketEvent } from "../constants/events";
+import { logger } from "../../../utils/logger";
 
 export class RealtimeService {
   private static io: SocketIOServer;
@@ -18,10 +19,10 @@ export class RealtimeService {
       this.io.use(socketAuthMiddleware);
 
       this.io.on("connection", (socket) => {
-        console.log(`[Socket] User connected: ${socket.id}`);
+        logger.info(`User connected: ${socket.id}`, { service: 'socket' });
 
         socket.on("disconnect", () => {
-          console.log(`[Socket] User disconnected: ${socket.id}`);
+          logger.info(`User disconnected: ${socket.id}`, { service: 'socket' });
         });
       });
     }
@@ -31,7 +32,7 @@ export class RealtimeService {
     if (this.io) {
       this.io.to(room).emit(event, payload);
     } else {
-      console.warn("[RealtimeService] Cannot emit: Socket.IO is not initialized.");
+      logger.warn("Cannot emit: Socket.IO is not initialized.", { service: 'socket' });
     }
   }
 

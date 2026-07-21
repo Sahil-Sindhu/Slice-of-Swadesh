@@ -1,13 +1,14 @@
 import { Response } from "express";
 import { AppError } from "../errors/AppError";
 import { sendError } from "./response";
+import { logger } from "./logger";
 
 export const handleError = (res: Response, error: any) => {
     if (error instanceof AppError) {
         return sendError(res, error.message, error.statusCode);
     }
 
-    console.error(error);
+    logger.error("Unhandled request error", { error: error instanceof Error ? error.message : String(error), stack: error?.stack });
 
     // MongoDB Duplicate Key
     if (error.code === 11000) {

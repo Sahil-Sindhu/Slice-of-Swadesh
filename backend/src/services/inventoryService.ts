@@ -8,6 +8,7 @@ import { NotificationService } from "../modules/notification/services/notificati
 import { NotificationType, NotificationChannel } from "../modules/notification/constants/notification";
 import { RealtimeService } from "../modules/realtime/services/realtime.service";
 import { SocketEvent } from "../modules/realtime/constants/events";
+import { logger } from "../utils/logger";
 
 export class InventoryService {
 
@@ -160,7 +161,7 @@ export class InventoryService {
                 title: "Low Stock Alert",
                 message: `Inventory for ${ingredient.name} has fallen below the minimum stock level (${ingredient.minimumStock}). Current stock: ${inventory.currentStock}.`,
                 metadata: { ingredientId: ingredient._id, currentStock: inventory.currentStock }
-            }).catch(err => console.error("Notification failed", err));
+            }).catch(err => logger.error("Notification failed", { error: err.message }));
             
             // Emit Realtime Event to Admin
             RealtimeService.emitToRoom('admin', SocketEvent.LOW_STOCK, {

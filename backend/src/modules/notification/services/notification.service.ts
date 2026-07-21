@@ -6,6 +6,7 @@ import { NodemailerProvider } from "../providers/NodemailerProvider";
 import { User } from "../../../models/User";
 import { NotFoundError } from "../../../errors/NotFoundError";
 import mongoose from "mongoose";
+import { logger } from "../../../utils/logger";
 
 interface SendNotificationArgs {
   userId?: string;
@@ -84,7 +85,7 @@ export class NotificationService {
             }
           });
         } catch (error) {
-          console.error(`Failed to send email to ${recipientEmail}:`, error);
+          logger.error(`Failed to send email to ${recipientEmail}`, { service: 'notification', error: error instanceof Error ? error.message : String(error) });
           // We don't throw here to avoid failing the main transaction (e.g. order placement)
           // just because an email failed to send. In a real app, this goes to a queue.
         }

@@ -44,6 +44,19 @@ const limiter = rateLimit({
 });
 app.use('/api/', limiter);
 
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Limit each IP to 5 requests per windowMs
+  message: {
+    status: 'error',
+    message: 'Too many authentication attempts. Please try again after 15 minutes.'
+  }
+});
+app.use('/api/v1/auth/login', authLimiter);
+app.use('/api/v1/auth/register', authLimiter);
+app.use('/api/v1/auth/forgot-password', authLimiter);
+app.use('/api/v1/auth/reset-password', authLimiter);
+
 // Request Parsing & Compression
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
