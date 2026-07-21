@@ -9,7 +9,8 @@
     "start": "node dist/server.js",
     "lint": "eslint \"src/**/*.ts\"",
     "test": "jest",
-    "seed:menu": "ts-node src/utils/seedMenu.ts"
+    "seed:menu": "ts-node src/utils/seedMenu.ts",
+    "clean:menu": "ts-node src/utils/clearMenu.ts"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
