@@ -76,13 +76,21 @@ function HomeNavbar() {
 
           {isLoggedIn && user ? (
             <>
+              {user.role === 'admin' && (
+                <button
+                  onClick={() => router.push('/dashboard/orders')}
+                  className="px-3.5 py-2 rounded-xl bg-[#1A1208] text-white text-[13px] font-bold shadow-[0_4px_14px_rgba(26,18,8,0.25)] hover:bg-[#E8441A] transition-all flex items-center gap-1.5 shrink-0"
+                >
+                  🛡️ Admin Panel
+                </button>
+              )}
               <div className="flex items-center gap-2 p-1.5 pr-3.5 rounded-xl border border-[#F0E6D8] bg-white cursor-pointer hover:bg-[#F0E6D8]/20 transition-colors"
                 onClick={() => router.push('/profile')}>
                 <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#E8441A] to-[#F59E0B] flex items-center justify-center text-white font-extrabold text-xs">
                   {user.name[0].toUpperCase()}
                 </div>
                 <span className="text-sm font-bold text-[#4A3728]">{user.name.split(' ')[0]}</span>
-                <button onClick={(e) => { e.stopPropagation(); logout(); }} className="text-[10px] text-[#B5957D] hover:text-[#E8441A] transition-colors font-medium ml-1">Sign out</button>
+                <button onClick={(e) => { e.stopPropagation(); logout(); }} className="text-[10px] text-[#B5957D] hover:text-[#E8441A] transition-colors font-medium ml-1 font-semibold">Sign out</button>
               </div>
               <NotificationDropdown />
             </>
