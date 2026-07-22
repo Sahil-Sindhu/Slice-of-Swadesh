@@ -522,16 +522,16 @@ export default function HomeClient() {
                         </span>
                       )}
                     </div>
-                    <p className="text-[#4A3728] text-[15px] leading-relaxed mb-8 italic font-medium">"{r.comment}"</p>
+                    <p className="text-[#4A3728] text-[15px] leading-relaxed mb-8 italic font-medium">"{r.comment || ''}"</p>
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#E8441A] to-[#F59E0B] flex items-center justify-center text-white font-extrabold text-sm uppercase">
-                      {r.userName[0]}
+                      {r.userName ? r.userName[0].toUpperCase() : 'U'}
                     </div>
                     <div>
-                      <div className="font-extrabold text-[#1A1208] text-sm">{r.userName}</div>
+                      <div className="font-extrabold text-[#1A1208] text-sm">{r.userName || 'Anonymous Guest'}</div>
                       <div className="text-[#B5957D] text-[10px] font-bold mt-0.5">
-                        {new Date(r.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                        {r.createdAt ? new Date(r.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : ''}
                       </div>
                     </div>
                   </div>
