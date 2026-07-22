@@ -71,6 +71,8 @@ function CartContent() {
   // ── Local state ────────────────────────────────────────────────────
   const [orderType, setOrderType] = React.useState<'Delivery' | 'Takeaway' | 'DineIn'>('Delivery');
   const [tableNumber, setTableNumber] = React.useState('');
+  const [contactPhone, setContactPhone] = React.useState('');
+  const [pickupTime, setPickupTime] = React.useState<'15m' | '30m' | '45m' | '60m'>('30m');
   const [orderResult, setOrderResult] = React.useState<CheckoutResult | null>(null);
 
   // Auto-select default/first address
@@ -78,6 +80,13 @@ function CartContent() {
     if (profile?.addresses?.length) {
       const defaultAddr = profile.addresses.find((a: any) => a.isDefault) ?? profile.addresses[0];
       setSelectedAddressId(defaultAddr._id);
+    }
+  }, [profile]);
+
+  // Auto-prefill contact phone from user profile
+  React.useEffect(() => {
+    if (profile?.phoneNumber) {
+      setContactPhone(profile.phoneNumber);
     }
   }, [profile]);
 
@@ -135,6 +144,15 @@ function CartContent() {
 
   const handleCheckout = (paymentMethod: string) => {
     let notes = '';
+    
+    // Validate Phone Number for Delivery/Takeaway
+    if (orderType === 'Delivery' || orderType === 'Takeaway') {
+      if (!contactPhone.trim() || contactPhone.trim().length < 8) {
+        showToast('Please enter a valid contact phone number.');
+        return;
+      }
+    }
+
     if (orderType === 'Delivery') {
       if (!selectedAddressId) {
         showToast('Please select or add a delivery address.');
@@ -145,15 +163,16 @@ function CartContent() {
         showToast('Selected address not found.');
         return;
       }
-      notes = `Deliver to: [${addr.label}] ${addr.street}, ${addr.city} - ${addr.zipCode}`;
+      notes = `Deliver to: [${addr.label}] ${addr.street}, ${addr.city} - ${addr.zipCode} | Contact Phone: ${contactPhone}`;
+    } else if (orderType === 'Takeaway') {
+      const timeStr = pickupTime === '15m' ? '15 minutes' : pickupTime === '30m' ? '30 minutes' : pickupTime === '45m' ? '45 minutes' : '1 hour';
+      notes = `Takeaway | Pickup in: ${timeStr} | Contact Phone: ${contactPhone}`;
     } else if (orderType === 'DineIn') {
       if (!tableNumber.trim()) {
         showToast('Please enter your table number.');
         return;
       }
-      notes = `Dine In: ${tableNumber}`;
-    } else {
-      notes = 'Takeaway Order';
+      notes = `Dine In: Table ${tableNumber}`;
     }
 
     placeOrder(notes, {
@@ -417,6 +436,66 @@ function CartContent() {
                         </button>
                       </form>
                     )}
+                    <div style={{ marginTop: 16 }}>
+                      <label htmlFor="contactPhone" style={{ fontSize: 11, fontWeight: 700, color: '#B5957D', textTransform: 'uppercase', letterSpacing: 1.2, display: 'block', marginBottom: 6 }}>
+                        Contact Phone Number
+                      </label>
+                      <input
+                        id="contactPhone"
+                        value={contactPhone}
+                        onChange={e => setContactPhone(e.target.value)}
+                        placeholder="e.g. 9876543210"
+                        style={{ padding: '12px 16px', borderRadius: 12, border: '1.5px solid #F0E6D8', background: '#FFFBF5', fontSize: 14, color: '#1A1208', outline: 'none', width: '100%', maxWidth: 240 }}
+                        required
+                      />
+                    </div>
+                  </div>
+                )}
+                {orderType === 'Takeaway' && (
+                  <div style={{ marginTop: 20, borderTop: '1.5px dashed #F0E6D8', paddingTop: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    <div>
+                      <h4 style={{ fontSize: 13, fontWeight: 800, color: '#1A1208', marginBottom: 12, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                        Pickup Time
+                      </h4>
+                      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                        {([
+                          { key: '15m', label: '15 Mins' },
+                          { key: '30m', label: '30 Mins' },
+                          { key: '45m', label: '45 Mins' },
+                          { key: '60m', label: '1 Hour' },
+                        ] as const).map(({ key, label }) => (
+                          <button
+                            key={key}
+                            type="button"
+                            onClick={() => setPickupTime(key)}
+                            style={{
+                              padding: '10px 20px', borderRadius: 14, fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                              background: pickupTime === key ? '#E8441A' : 'white',
+                              color: pickupTime === key ? 'white' : '#4A3728',
+                              border: pickupTime === key ? '2px solid #E8441A' : '2px solid #F0E6D8',
+                              boxShadow: pickupTime === key ? '0 4px 12px rgba(232,68,26,0.25)' : 'none',
+                              transition: 'all 0.2s',
+                            }}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label htmlFor="contactPhone" style={{ fontSize: 11, fontWeight: 700, color: '#B5957D', textTransform: 'uppercase', letterSpacing: 1.2, display: 'block', marginBottom: 6 }}>
+                        Contact Phone Number
+                      </label>
+                      <input
+                        id="contactPhone"
+                        value={contactPhone}
+                        onChange={e => setContactPhone(e.target.value)}
+                        placeholder="e.g. 9876543210"
+                        style={{ padding: '12px 16px', borderRadius: 12, border: '1.5px solid #F0E6D8', background: '#FFFBF5', fontSize: 14, color: '#1A1208', outline: 'none', width: '100%', maxWidth: 240 }}
+                        required
+                      />
+                    </div>
                   </div>
                 )}
                 {orderType === 'DineIn' && (
