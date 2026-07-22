@@ -89,7 +89,7 @@ app.post('/api/v1/test/email', async (req: Request, res: Response) => {
     const { NodemailerProvider } = require('./modules/notification/providers/NodemailerProvider');
     const provider = new NodemailerProvider();
     await provider.sendEmail({
-      to: req.body.to || 'sliceofswadesh@gmail.com',
+      to: req.body.to || 'supportsliceofswadesh@gmail.com',
       subject: 'Test Email from Slice of Swadesh',
       template: 'welcome',
       context: { name: 'Test User' }
