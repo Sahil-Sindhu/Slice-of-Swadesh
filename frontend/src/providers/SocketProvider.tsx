@@ -16,7 +16,7 @@ export const useSocket = () => useContext(SocketContext);
 export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-  const { token, isLoggedIn } = useAuthStore();
+  const { isLoggedIn, token } = useAuthStore();
 
   useEffect(() => {
     if (!isLoggedIn || !token) {

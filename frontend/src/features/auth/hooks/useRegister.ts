@@ -10,7 +10,7 @@ export function useRegister() {
     mutationFn: (payload: RegisterPayload) => registerUser(payload),
     onSuccess: (data) => {
       // Auto-login after successful registration (cookie is set automatically by backend via HttpOnly)
-      setAuth(data.user);
+      setAuth(data.user, data.token);
     },
   });
 }

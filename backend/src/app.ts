@@ -23,6 +23,7 @@ import checkoutRoutes from './routes/checkoutRoutes';
 import paymentRoutes from './modules/payment/routes/payment.routes';
 import notificationRoutes from './modules/notification/routes/notification.routes';
 import invoiceRoutes from './modules/invoice/routes/invoice.routes';
+import reviewRoutes from './routes/reviewRoutes';
 
 const app = express();
 
@@ -80,6 +81,7 @@ app.use('/api/v1/cart', checkoutRoutes);
 app.use('/api/v1/payments', paymentRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
 app.use('/api/v1/invoices', invoiceRoutes);
+app.use('/api/v1/reviews', reviewRoutes);
 
 // Basic Health Check Endpoint
 app.get('/health', (req: Request, res: Response) => {

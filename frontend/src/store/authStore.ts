@@ -7,14 +7,15 @@ import { logoutUser } from '@/features/auth/api/authApi';
 interface AuthState {
   isLoggedIn: boolean;
   user: ApiUser | null;
+  token: string | null;
 
   // Actions
-  setAuth: (user: ApiUser) => void;
+  setAuth: (user: ApiUser, token: string) => void;
   setUser: (user: ApiUser) => void;
   logout: () => void;
 
   // Legacy alias — kept for any existing code that calls login()
-  login: (user: ApiUser) => void;
+  login: (user: ApiUser, token?: string) => void;
 }
 
 // ─── Store ────────────────────────────────────────────────────────────────────
@@ -23,9 +24,10 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       isLoggedIn: false,
       user: null,
+      token: null,
 
-      setAuth: (user: ApiUser) =>
-        set({ isLoggedIn: true, user }),
+      setAuth: (user: ApiUser, token: string) =>
+        set({ isLoggedIn: true, user, token }),
 
       setUser: (user: ApiUser) =>
         set({ user }),
@@ -34,12 +36,12 @@ export const useAuthStore = create<AuthState>()(
         // Destroy session on the backend and clear the secure cookie
         logoutUser().catch((err) => console.error('Logout API error:', err));
         // Immediately clear auth state in the frontend
-        set({ isLoggedIn: false, user: null });
+        set({ isLoggedIn: false, user: null, token: null });
       },
 
       // Legacy alias — kept for backwards compatibility
-      login: (user: ApiUser) =>
-        set({ isLoggedIn: true, user }),
+      login: (user: ApiUser, token?: string) =>
+        set({ isLoggedIn: true, user, token: token || null }),
     }),
     {
       name: 'swadesh-auth',
@@ -47,6 +49,7 @@ export const useAuthStore = create<AuthState>()(
       partialize: (state: AuthState) => ({
         isLoggedIn: state.isLoggedIn,
         user: state.user,
+        token: state.token,
       }) as AuthState,
     }
   )

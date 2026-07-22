@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAuthStore } from '../store/authStore';
 import { useCartStore } from '../store/cartStore';
 import { useFoods, useCategories, FoodCard, FoodGridSkeleton, CategoryFilter } from '../features/menu';
+import { useReviews, useCreateReview } from '../features/reviews';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { Button } from '@/components/ui/Button';
@@ -20,24 +21,7 @@ import {
   Phone, MoveRight
 } from 'lucide-react';
 
-/* --- STATIC DATA --- */
-const REVIEWS = [
-  {
-    name: 'Amit Sharma', role: 'Tech Lead, Bengaluru', stars: 5,
-    text: 'The Tandoori Naan Pizza is unlike anything I\'ve had before. Perfectly crispy, smoky, and delivers in 25 mins flat!',
-    img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=80',
-  },
-  {
-    name: 'Priya Patel', role: 'Food Blogger', stars: 5,
-    text: 'Swadesh nails the Indian fusion concept. The cardamom burger is mind-blowing. My whole family is obsessed!',
-    img: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=80',
-  },
-  {
-    name: 'Rohan Kapoor', role: 'Startup Founder', stars: 5,
-    text: 'Fast delivery, gorgeous packaging, and the saffron milkshake is the best I\'ve ever tasted. 10/10 experience.',
-    img: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=80',
-  },
-];
+
 
 /* --- NAVBAR --- */
 function HomeNavbar() {
@@ -284,9 +268,52 @@ export default function HomeClient() {
   const { data: categories, isLoading: catLoading } = useCategories();
   const [activeCategory, setActiveCategory] = React.useState('all');
 
+  const { data: reviewsData } = useReviews();
+  const createReviewMutation = useCreateReview();
+  const reviews = reviewsData ?? [];
+
+  const [reviewRating, setReviewRating] = React.useState(5);
+  const [reviewComment, setReviewComment] = React.useState('');
+  const [reviewLang, setReviewLang] = React.useState<'English' | 'Hindi' | 'Haryanvi'>('English');
+  const [hoverRating, setHoverRating] = React.useState(0);
+  const [isSubmittingReview, setIsSubmittingReview] = React.useState(false);
+  const [reviewError, setReviewError] = React.useState('');
+  const [reviewSuccess, setReviewSuccess] = React.useState(false);
+
   const handleOrder = () => {
     if (!isLoggedIn) router.push('/login?redirect=/cart');
     else router.push('/cart');
+  };
+
+  const handleReviewSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isLoggedIn) {
+      router.push('/login?redirect=/');
+      return;
+    }
+    if (!reviewComment.trim() || reviewComment.trim().length < 5) {
+      setReviewError('Comment must be at least 5 characters long.');
+      return;
+    }
+    setReviewError('');
+    setIsSubmittingReview(true);
+    createReviewMutation.mutate({
+      rating: reviewRating,
+      comment: reviewComment,
+      language: reviewLang
+    }, {
+      onSuccess: () => {
+        setReviewComment('');
+        setReviewRating(5);
+        setReviewSuccess(true);
+        setIsSubmittingReview(false);
+        setTimeout(() => setReviewSuccess(false), 4000);
+      },
+      onError: (err: any) => {
+        setReviewError(err?.response?.data?.message || 'Failed to submit review');
+        setIsSubmittingReview(false);
+      }
+    });
   };
 
   return (
@@ -473,52 +500,139 @@ export default function HomeClient() {
             <h2 className="text-3xl lg:text-4xl font-black text-[#1A1208] font-[family-name:var(--font-outfit)] mb-3 flex items-center justify-center gap-3">
               <Heart size={36} className="text-[#E8441A] fill-[#E8441A]" /> Loved By Foodies
             </h2>
-            <p className="text-[#8C6E5A] text-[15px] font-medium">Real reviews from real people.</p>
+            <p className="text-[#8C6E5A] text-[15px] font-medium">Real reviews from our customers in Hindi, English & Haryanvi!</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {REVIEWS.map((r, i) => (
-              <div key={i} className="bg-[#FFFBF5] rounded-3xl p-8 border-2 border-[#F0E6D8] hover:border-[#E8441A]/30 hover:shadow-[0_12px_32px_rgba(232,68,26,0.06)] hover:-translate-y-1 transition-all duration-300">
-                <div className="flex gap-1 mb-5">
-                  {[...Array(r.stars)].map((_, i) => <Star key={i} size={18} className="text-[#F59E0B] fill-[#F59E0B]" />)}
-                </div>
-                <p className="text-[#4A3728] text-[15px] leading-relaxed mb-8 italic font-medium">"{r.text}"</p>
-                <div className="flex items-center gap-4">
-                  <img src={r.img} alt={r.name} className="w-12 h-12 rounded-full object-cover border-2 border-[#F0E6D8]" />
+          
+          {reviews.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+              {reviews.map((r: any) => (
+                <div key={r._id} className="bg-[#FFFBF5] rounded-3xl p-8 border-2 border-[#F0E6D8] hover:border-[#E8441A]/30 hover:shadow-[0_12px_32px_rgba(232,68,26,0.06)] hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between">
                   <div>
-                    <div className="font-extrabold text-[#1A1208] text-sm">{r.name}</div>
-                    <div className="text-[#B5957D] text-[11px] font-bold uppercase tracking-wider mt-0.5">{r.role}</div>
+                    <div className="flex justify-between items-start mb-5">
+                      <div className="flex gap-1">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            size={16}
+                            className={i < r.rating ? "text-[#F59E0B] fill-[#F59E0B]" : "text-gray-300"}
+                          />
+                        ))}
+                      </div>
+                      {r.language && (
+                        <span className="text-[10px] bg-[#FFF0EB] text-[#E8441A] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                          {r.language}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[#4A3728] text-[15px] leading-relaxed mb-8 italic font-medium">"{r.comment}"</p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#E8441A] to-[#F59E0B] flex items-center justify-center text-white font-extrabold text-sm uppercase">
+                      {r.userName[0]}
+                    </div>
+                    <div>
+                      <div className="font-extrabold text-[#1A1208] text-sm">{r.userName}</div>
+                      <div className="text-[#B5957D] text-[10px] font-bold mt-0.5">
+                        {new Date(r.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* NEWSLETTER */}
-      <section className="py-24 px-6 bg-gradient-to-br from-[#1A1208] to-[#2D1A0A] relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5" />
-        <div className="max-w-2xl mx-auto text-center relative z-10">
-          <div className="w-20 h-20 bg-white/10 rounded-3xl flex items-center justify-center mx-auto mb-8 backdrop-blur-sm border border-white/20">
-            <Mail size={36} className="text-white" strokeWidth={1.5} />
-          </div>
-          <h2 className="text-white text-3xl lg:text-4xl font-black font-[family-name:var(--font-outfit)] mb-5">Join the Swadesh Club</h2>
-          <p className="text-white/70 text-[15px] leading-relaxed mb-10 max-w-lg mx-auto font-medium">
-            Get weekly chef specials, exclusive member deals, and a <strong className="text-[#F59E0B]">₹150 welcome coupon</strong> right in your inbox.
-          </p>
-          {subscribed ? (
-            <div className="bg-green-500/15 border-2 border-green-500/30 rounded-2xl p-5 text-green-400 font-bold flex items-center justify-center gap-3">
-              <CheckCircle2 size={20} /> You're in! Check your inbox for your ₹150 coupon.
+              ))}
             </div>
           ) : (
-            <form onSubmit={e => { e.preventDefault(); setSubscribed(true); }} className="flex flex-col sm:flex-row gap-3">
-              <input type="email" value={emailValue} onChange={e => setEmailValue(e.target.value)} required placeholder="Enter your email address"
-                className="flex-1 py-4 px-6 rounded-2xl border-2 border-white/15 bg-white/5 text-white placeholder:text-white/40 font-medium focus:outline-none focus:border-[#E8441A] focus:bg-white/10 transition-all shadow-inner" />
-              <Button variant="primary" type="submit" className="py-4 px-8 text-[15px] shadow-[0_8px_24px_rgba(232,68,26,0.4)]">
-                Subscribe
-              </Button>
-            </form>
+            <div className="text-center py-10 mb-10 text-[#8C6E5A] font-medium text-sm">
+              No reviews yet. Be the first to post a review!
+            </div>
           )}
+
+          {/* Write a Review Section */}
+          <div className="bg-[#FFFBF5] border-2 border-[#F0E6D8] rounded-3xl p-8 lg:p-12 max-w-2xl mx-auto shadow-sm">
+            <h3 className="text-2xl font-black text-[#1A1208] font-[family-name:var(--font-outfit)] mb-2 text-center">Share Your Feedback</h3>
+            <p className="text-[#8C6E5A] text-sm font-medium text-center mb-8">Let us know how your experience was!</p>
+            
+            {reviewSuccess && (
+              <div className="bg-green-500/15 border-2 border-green-500/30 rounded-2xl p-4 text-green-700 text-sm font-bold text-center mb-6">
+                🎉 Thank you! Your review has been published successfully.
+              </div>
+            )}
+            
+            {reviewError && (
+              <div className="bg-red-500/10 border border-red-400 rounded-2xl p-4 text-red-600 text-sm font-bold text-center mb-6">
+                ⚠️ {reviewError}
+              </div>
+            )}
+
+            {isLoggedIn ? (
+              <form onSubmit={handleReviewSubmit} className="space-y-6">
+                <div>
+                  <label className="block text-xs font-bold text-[#8C6E5A] uppercase tracking-wider mb-2">Your Rating</label>
+                  <div className="flex items-center gap-1.5">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setReviewRating(star)}
+                        onMouseEnter={() => setHoverRating(star)}
+                        onMouseLeave={() => setHoverRating(0)}
+                        className="text-2xl transition-transform hover:scale-110 cursor-pointer focus:outline-none"
+                      >
+                        <Star
+                          size={28}
+                          className={(hoverRating || reviewRating) >= star ? "text-[#F59E0B] fill-[#F59E0B]" : "text-gray-300"}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-[#8C6E5A] uppercase tracking-wider mb-2">Vibe / Language</label>
+                    <select
+                      value={reviewLang}
+                      onChange={(e: any) => setReviewLang(e.target.value)}
+                      className="w-full py-3 px-4 rounded-xl border-2 border-[#F0E6D8] bg-white text-sm font-medium text-[#1A1208] focus:outline-none focus:border-[#E8441A] transition-all"
+                    >
+                      <option value="English">English</option>
+                      <option value="Hindi">Hindi (हिंदी)</option>
+                      <option value="Haryanvi">Haryanvi (हरयाणवी)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#8C6E5A] uppercase tracking-wider mb-2">Your Review</label>
+                  <textarea
+                    rows={4}
+                    value={reviewComment}
+                    onChange={(e) => setReviewComment(e.target.value)}
+                    required
+                    placeholder="Tell us what you liked (Tandoori Pizza, Cardamom Burger...) in Haryanvi, Hindi or English!"
+                    className="w-full py-3.5 px-5 rounded-2xl border-2 border-[#F0E6D8] bg-white text-sm text-[#1A1208] placeholder:text-gray-400 focus:outline-none focus:border-[#E8441A] transition-all"
+                  />
+                </div>
+
+                <Button
+                  variant="primary"
+                  type="submit"
+                  disabled={isSubmittingReview}
+                  className="w-full py-4 text-sm font-bold shadow-[0_8px_24px_rgba(232,68,26,0.25)]"
+                >
+                  {isSubmittingReview ? 'Submitting...' : 'Post Review'}
+                </Button>
+              </form>
+            ) : (
+              <div className="text-center py-6">
+                <p className="text-[#8C6E5A] text-sm font-medium mb-4">Please log in to share your experience with the community.</p>
+                <Link href="/login?redirect=/">
+                  <Button variant="primary" className="px-8 py-3 text-sm">
+                    Log In to Write a Review
+                  </Button>
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
       </section>
 

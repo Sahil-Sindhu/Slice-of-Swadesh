@@ -9,9 +9,8 @@ export function useLogin() {
 
   return useMutation({
     mutationFn: (payload: LoginPayload) => loginUser(payload),
-    onSuccess: (data, _variables, _context) => {
-      // Persist user into Zustand store (cookie is set automatically by backend via HttpOnly)
-      setAuth(data.user);
+    onSuccess: (data) => {
+      setAuth(data.user, data.token);
     },
   });
 }
