@@ -95,7 +95,8 @@ export class PaymentService {
             channels: [NotificationChannel.IN_APP, NotificationChannel.EMAIL],
             title: "Payment Successful",
             message: `Your payment of ₹${payment.amount} for order ${payment.orderId} was successful.`,
-            metadata: { paymentId, orderId: payment.orderId }
+            metadata: { paymentId, orderId: payment.orderId, amount: payment.amount },
+            emailTemplate: "paymentSuccess"
           }).catch(err => logger.error("Notification failed", { error: err.message }));
         } else {
           NotificationService.send({
@@ -104,7 +105,8 @@ export class PaymentService {
             channels: [NotificationChannel.IN_APP, NotificationChannel.EMAIL],
             title: "Payment Failed",
             message: `Your payment of ₹${payment.amount} for order ${payment.orderId} failed.`,
-            metadata: { paymentId, orderId: payment.orderId }
+            metadata: { paymentId, orderId: payment.orderId, amount: payment.amount },
+            emailTemplate: "paymentFailed"
           }).catch(err => logger.error("Notification failed", { error: err.message }));
         }
       }

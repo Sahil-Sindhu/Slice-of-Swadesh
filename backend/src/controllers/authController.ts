@@ -51,8 +51,8 @@ export const register = async (req: Request, res: Response) => {
       type: NotificationType.WELCOME,
       channels: [NotificationChannel.IN_APP, NotificationChannel.EMAIL],
       title: "Welcome to Slice of Swadesh",
-      message: "We're glad to have you! Here's a ₹150 welcome coupon.",
-      metadata: { couponCode: "WELCOME150" },
+      message: "We're glad to have you! Explore our delicious menu.",
+      metadata: {},
       emailTemplate: "welcome"
     }).catch(err => logger.error("Welcome notification failed", { error: err.message }));
 

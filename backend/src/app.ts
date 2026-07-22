@@ -88,13 +88,25 @@ app.post('/api/v1/test/email', async (req: Request, res: Response) => {
   try {
     const { NodemailerProvider } = require('./modules/notification/providers/NodemailerProvider');
     const provider = new NodemailerProvider();
+    
+    const template = req.body.template || 'welcome';
+    const to = req.body.to || 'supportsliceofswadesh@gmail.com';
+    const subject = req.body.subject || `Test ${template} Email from Slice of Swadesh`;
+    const context = req.body.context || {
+      name: 'Test User',
+      orderId: 'ORD-99999',
+      amount: '500',
+      totalAmount: '500',
+      resetUrl: 'http://localhost:3000/reset-password?token=mocktoken'
+    };
+    
     await provider.sendEmail({
-      to: req.body.to || 'supportsliceofswadesh@gmail.com',
-      subject: 'Test Email from Slice of Swadesh',
-      template: 'welcome',
-      context: { name: 'Test User' }
+      to,
+      subject,
+      template,
+      context
     });
-    res.status(200).json({ success: true, message: 'Email dispatched successfully' });
+    res.status(200).json({ success: true, message: `Email (${template}) dispatched successfully` });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });
   }
