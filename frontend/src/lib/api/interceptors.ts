@@ -1,7 +1,22 @@
 import apiClient from './client';
+import { useAuthStore } from '@/store/authStore';
 
 // Keep track of the active refresh promise to avoid duplicate refreshes if multiple requests fail at the same time
 let refreshPromise: Promise<any> | null = null;
+
+// ─── Request Interceptor ──────────────────────────────────────────────────────
+apiClient.interceptors.request.use(
+  (config) => {
+    if (typeof window !== 'undefined') {
+      const token = useAuthStore.getState().token;
+      if (token && config.headers) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 // ─── Response Interceptor ─────────────────────────────────────────────────────
 // On 401, attempt to silently refresh session. If that fails, redirect to login.

@@ -274,7 +274,6 @@ export default function HomeClient() {
 
   const [reviewRating, setReviewRating] = React.useState(5);
   const [reviewComment, setReviewComment] = React.useState('');
-  const [reviewLang, setReviewLang] = React.useState<'English' | 'Hindi' | 'Haryanvi'>('English');
   const [hoverRating, setHoverRating] = React.useState(0);
   const [isSubmittingReview, setIsSubmittingReview] = React.useState(false);
   const [reviewError, setReviewError] = React.useState('');
@@ -299,8 +298,7 @@ export default function HomeClient() {
     setIsSubmittingReview(true);
     createReviewMutation.mutate({
       rating: reviewRating,
-      comment: reviewComment,
-      language: reviewLang
+      comment: reviewComment
     }, {
       onSuccess: () => {
         setReviewComment('');
@@ -583,21 +581,6 @@ export default function HomeClient() {
                         />
                       </button>
                     ))}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-[#8C6E5A] uppercase tracking-wider mb-2">Vibe / Language</label>
-                    <select
-                      value={reviewLang}
-                      onChange={(e: any) => setReviewLang(e.target.value)}
-                      className="w-full py-3 px-4 rounded-xl border-2 border-[#F0E6D8] bg-white text-sm font-medium text-[#1A1208] focus:outline-none focus:border-[#E8441A] transition-all"
-                    >
-                      <option value="English">English</option>
-                      <option value="Hindi">Hindi (हिंदी)</option>
-                      <option value="Haryanvi">Haryanvi (हरयाणवी)</option>
-                    </select>
                   </div>
                 </div>
 
