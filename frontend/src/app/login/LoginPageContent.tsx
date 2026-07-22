@@ -71,14 +71,14 @@ export default function LoginPageContent() {
           </p>
 
           <div style={{ background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 20, padding: '20px 24px' }}>
-            <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: 14, lineHeight: 1.7, fontStyle: 'italic', marginBottom: 16 }}>
-              &ldquo;The Tandoori Naan Pizza changed my life! Fastest delivery, and the app experience is seamless.&rdquo;
+            <p style={{ color: 'rgba(255,255,255,0.95)', fontSize: 14, lineHeight: 1.7, fontStyle: 'italic', marginBottom: 16 }}>
+              &ldquo;घणा स्वाद पिज्जा था भाई! तंदूरी नान पिज्जा खाके मजा आ गया। कती जहर स्वाद था भाई, कसुता काम कर राखया सै!&rdquo;
             </p>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'linear-gradient(135deg,#FFDD57,#F59E0B)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, color: '#1A1208', fontSize: 14 }}>A</div>
+              <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'linear-gradient(135deg,#FFDD57,#F59E0B)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, color: '#1A1208', fontSize: 14 }}>J</div>
               <div>
-                <div style={{ color: 'white', fontSize: 13, fontWeight: 700 }}>Amit Sharma</div>
-                <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11 }}>Tech Lead · Bengaluru</div>
+                <div style={{ color: 'white', fontSize: 13, fontWeight: 700 }}>Jaipal Dahiya</div>
+                <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11 }}>Loyal Foodie · Rohtak</div>
               </div>
               <div style={{ marginLeft: 'auto', color: '#FFDD57', fontSize: 14 }}>★★★★★</div>
             </div>
