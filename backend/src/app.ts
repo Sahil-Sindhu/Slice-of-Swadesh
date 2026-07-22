@@ -83,6 +83,23 @@ app.use('/api/v1/notifications', notificationRoutes);
 app.use('/api/v1/invoices', invoiceRoutes);
 app.use('/api/v1/reviews', reviewRoutes);
 
+// Temporary test email route
+app.post('/api/v1/test/email', async (req: Request, res: Response) => {
+  try {
+    const { NodemailerProvider } = require('./modules/notification/providers/NodemailerProvider');
+    const provider = new NodemailerProvider();
+    await provider.sendEmail({
+      to: req.body.to || 'sliceofswadesh@gmail.com',
+      subject: 'Test Email from Slice of Swadesh',
+      template: 'welcome',
+      context: { name: 'Test User' }
+    });
+    res.status(200).json({ success: true, message: 'Email dispatched successfully' });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // Basic Health Check Endpoint
 app.get('/health', (req: Request, res: Response) => {
   const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';

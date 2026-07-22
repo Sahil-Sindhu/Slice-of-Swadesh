@@ -9,6 +9,12 @@ export class NodemailerProvider implements EmailProvider {
   private transporter: nodemailer.Transporter;
 
   constructor() {
+    console.log({
+      provider: process.env.NOTIFICATION_EMAIL_PROVIDER,
+      host: process.env.NODEMAILER_HOST,
+      port: process.env.NODEMAILER_PORT,
+      user: process.env.NODEMAILER_USER,
+    });
     this.transporter = nodemailer.createTransport({
       host: process.env.NODEMAILER_HOST || "smtp.gmail.com",
       port: parseInt(process.env.NODEMAILER_PORT || "587"),
