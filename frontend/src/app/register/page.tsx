@@ -88,13 +88,10 @@ export default function RegisterPage() {
             Create your account and unlock exclusive member deals, early menu previews, and a personalised ordering experience.
           </p>
 
-          {/* Benefits list */}
           <ul className="flex flex-col gap-3 mt-2">
             {[
-              ['🎁', 'Get ₹150 off your first order'],
               ['⚡', 'Real-time order tracking'],
               ['❤️', 'Save your favourite dishes'],
-              ['🏷️', 'Exclusive member-only offers'],
             ].map(([icon, text]) => (
               <li key={text} className="flex items-center gap-3 text-white/70 text-sm">
                 <span className="text-base shrink-0">{icon}</span>

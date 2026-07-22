@@ -316,12 +316,7 @@ export default function HomeClient() {
 
   return (
     <div className="bg-[#FFFBF5] text-[#1A1208] min-h-screen font-[family-name:var(--font-inter)]">
-      {/* Announcement bar */}
-      <div className="bg-gradient-to-r from-[#C93B15] via-[#E8441A] to-[#C93B15] text-white text-center py-2.5 px-4 text-[13px] font-bold tracking-wide">
-        <span className="flex items-center justify-center gap-2">
-          <Flame size={14} /> Monsoon Special - 20% off orders above ₹499 <span className="hidden sm:inline">|</span> Use code <strong className="bg-white/20 px-2 py-0.5 rounded text-white">SWADESH20</strong>
-        </span>
-      </div>
+
 
       <HomeNavbar />
 
