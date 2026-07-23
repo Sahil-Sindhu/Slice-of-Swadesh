@@ -8,27 +8,27 @@ import { DashboardStats, RevenueDataPoint, RecentOrder, LowStockAlert, BestSelle
 
 export const DashboardAPI = {
   getStats: async (): Promise<DashboardStats> => {
-    const { data } = await apiClient.get('/analytics/dashboard-stats');
+    const { data } = await apiClient.get('/api/v1/analytics/dashboard-stats');
     return data.data;
   },
 
   getRevenueAnalytics: async (): Promise<RevenueDataPoint[]> => {
-    const { data } = await apiClient.get('/analytics/revenue?days=7');
+    const { data } = await apiClient.get('/api/v1/analytics/revenue?days=7');
     return data.data;
   },
 
   getRecentOrders: async (): Promise<RecentOrder[]> => {
-    const { data } = await apiClient.get('/analytics/recent-orders');
+    const { data } = await apiClient.get('/api/v1/analytics/recent-orders');
     return data.data;
   },
 
   getLowStockItems: async (): Promise<LowStockAlert[]> => {
-    const { data } = await apiClient.get('/analytics/low-stock');
+    const { data } = await apiClient.get('/api/v1/analytics/low-stock');
     return data.data;
   },
 
   getBestSellingFoods: async (): Promise<BestSeller[]> => {
-    const { data } = await apiClient.get('/analytics/best-sellers');
+    const { data } = await apiClient.get('/api/v1/analytics/best-sellers');
     return data.data;
   }
 };

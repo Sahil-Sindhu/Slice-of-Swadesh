@@ -5,6 +5,7 @@ import { Card } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
 import { Container, Section, Grid, Flex, Stack } from '../../../components/layout/LayoutComponents';
+import { useAuthStore } from '../../../store/authStore';
 
 interface EmployeeTask {
   id: string;
@@ -15,6 +16,7 @@ interface EmployeeTask {
 }
 
 export default function EmployeeDashboardPage() {
+  const { user } = useAuthStore();
   const [isCheckedIn, setIsCheckedIn] = React.useState(false);
   const [checkInTime, setCheckInTime] = React.useState<string | null>(null);
   const [isOnBreak, setIsOnBreak] = React.useState(false);
@@ -67,8 +69,8 @@ export default function EmployeeDashboardPage() {
         <div className="flex flex-col gap-6 text-sm select-none">
           <div className="flex flex-col gap-1">
             <span className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest">My Identity</span>
-            <div className="font-bold mt-1">Rahul Verma</div>
-            <span className="text-xs text-foreground/50">Kitchen Commis Chef</span>
+            <div className="font-bold mt-1">{user?.name || 'Staff Member'}</div>
+            <span className="text-xs text-foreground/50">{user?.role || 'Employee'}</span>
           </div>
 
           <div className="flex flex-col gap-1">

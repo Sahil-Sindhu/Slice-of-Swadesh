@@ -160,3 +160,19 @@ input:-webkit-autofill:focus {
   transform: translateY(-4px);
   box-shadow: 0 20px 50px var(--shadow-lg);
 }
+
+@media print {
+  aside, nav, header, button, .no-print, [role="button"] {
+    display: none !important;
+  }
+  body, main, div, section {
+    background: white !important;
+    color: black !important;
+    box-shadow: none !important;
+    border-color: #E5E7EB !important;
+  }
+  .max-w-7xl, .max-w-6xl {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+}

@@ -24,6 +24,7 @@ import paymentRoutes from './modules/payment/routes/payment.routes';
 import notificationRoutes from './modules/notification/routes/notification.routes';
 import invoiceRoutes from './modules/invoice/routes/invoice.routes';
 import reviewRoutes from './routes/reviewRoutes';
+import analyticsRoutes from './routes/analyticsRoutes';
 
 const app = express();
 
@@ -82,6 +83,7 @@ app.use('/api/v1/payments', paymentRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
 app.use('/api/v1/invoices', invoiceRoutes);
 app.use('/api/v1/reviews', reviewRoutes);
+app.use('/api/v1/analytics', analyticsRoutes);
 
 // Temporary test email route
 app.post('/api/v1/test/email', async (req: Request, res: Response) => {

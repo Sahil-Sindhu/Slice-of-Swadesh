@@ -42,6 +42,15 @@ export function DashboardClient() {
       <PageHeader 
         title="Overview" 
         description="Here's what's happening in your restaurant today." 
+        action={
+          <button
+            id="export-pdf-button"
+            onClick={() => window.print()}
+            className="px-4 py-2 bg-[#E8441A] text-white rounded-xl text-sm font-bold shadow-[0_4px_12px_rgba(232,68,26,0.2)] hover:bg-[#C93B15] transition-all cursor-pointer no-print"
+          >
+            📄 Export Report (PDF)
+          </button>
+        }
       />
 
       <StatsGrid />
