@@ -76,12 +76,28 @@ function HomeNavbar() {
 
           {isLoggedIn && user ? (
             <>
-              {user.role === 'admin' && (
+              {(user.role === 'admin' || user.role === 'superadmin') && (
                 <button
-                  onClick={() => router.push('/dashboard/orders')}
+                  onClick={() => router.push('/dashboard/admin')}
                   className="px-3.5 py-2 rounded-xl bg-[#1A1208] text-white text-[13px] font-bold shadow-[0_4px_14px_rgba(26,18,8,0.25)] hover:bg-[#E8441A] transition-all flex items-center gap-1.5 shrink-0"
                 >
                   🛡️ Admin Panel
+                </button>
+              )}
+              {user.role === 'chef' && (
+                <button
+                  onClick={() => router.push('/dashboard/kitchen')}
+                  className="px-3.5 py-2 rounded-xl bg-[#1A1208] text-white text-[13px] font-bold shadow-[0_4px_14px_rgba(26,18,8,0.25)] hover:bg-[#E8441A] transition-all flex items-center gap-1.5 shrink-0"
+                >
+                  👨‍🍳 Kitchen Panel
+                </button>
+              )}
+              {(user.role === 'manager' || user.role === 'cashier' || user.role === 'delivery') && (
+                <button
+                  onClick={() => router.push('/dashboard/employee')}
+                  className="px-3.5 py-2 rounded-xl bg-[#1A1208] text-white text-[13px] font-bold shadow-[0_4px_14px_rgba(26,18,8,0.25)] hover:bg-[#E8441A] transition-all flex items-center gap-1.5 shrink-0"
+                >
+                  💼 Staff Panel
                 </button>
               )}
               <div className="flex items-center gap-2 p-1.5 pr-3.5 rounded-xl border border-[#F0E6D8] bg-white cursor-pointer hover:bg-[#F0E6D8]/20 transition-colors"

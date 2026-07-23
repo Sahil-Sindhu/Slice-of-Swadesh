@@ -29,8 +29,27 @@ export default function LoginPageContent() {
 
   const onSubmit = (data: LoginForm) => {
     login(data, {
-      onSuccess: () => {
-        router.push(redirectTo);
+      onSuccess: (response) => {
+        if (redirectTo && redirectTo !== '/') {
+          router.replace(redirectTo);
+        } else {
+          switch (response.user.role) {
+            case 'admin':
+            case 'superadmin':
+              router.replace('/dashboard/admin');
+              break;
+            case 'chef':
+              router.replace('/dashboard/kitchen');
+              break;
+            case 'manager':
+            case 'cashier':
+            case 'delivery':
+              router.replace('/dashboard/employee');
+              break;
+            default:
+              router.replace('/');
+          }
+        }
       },
     });
   };

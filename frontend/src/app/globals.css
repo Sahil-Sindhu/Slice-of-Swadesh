@@ -20,6 +20,9 @@
   --text-3:      #8C6E5A;
   --text-muted:  #B5957D;
 
+  --foreground:  #1A1208;
+  --card:        #FFFFFF;
+
   --primary:     #E8441A;
   --primary-2:   #C93B15;
   --primary-3:   #FF6B3D;
@@ -42,6 +45,8 @@
   --color-bg-3:      var(--bg-3);
   --color-surface:   var(--surface);
   --color-surface-2: var(--surface-2);
+  --color-card:       var(--card);
+  --color-foreground: var(--foreground);
 
   --color-text:      var(--text);
   --color-text-2:    var(--text-2);

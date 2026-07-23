@@ -37,7 +37,7 @@ export default function FranchiseDashboardPage() {
   };
 
   return (
-    <div className="flex-grow flex bg-[#F9F6F0] dark:bg-[#121110] text-foreground min-h-screen font-sans">
+    <div className="flex-grow flex bg-[#F9F6F0] text-foreground min-h-screen font-sans">
       {/* 1. Sidebar */}
       <aside className="w-64 border-r border-border bg-card p-6 hidden md:block shrink-0">
         <div className="mb-8">
