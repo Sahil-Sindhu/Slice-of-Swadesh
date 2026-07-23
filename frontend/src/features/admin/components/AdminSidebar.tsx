@@ -6,28 +6,29 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
   ClipboardList,
-  Utensils,
-  Tag,
   Package,
-  Leaf,
   BarChart3,
   Users,
-  Settings,
   Store,
-  CreditCard
+  CreditCard,
+  Brain,
+  MessageSquare,
+  Globe,
+  UserCheck,
+  Utensils
 } from 'lucide-react';
 
 const MENU_ITEMS = [
-  { name: 'Dashboard',   href: '/admin/dashboard',   icon: LayoutDashboard },
-  { name: 'Orders',      href: '/admin/orders',       icon: ClipboardList },
-  { name: 'Payments',    href: '/admin/payments',     icon: CreditCard },
-  { name: 'Foods',       href: '/admin/foods',        icon: Utensils },
-  { name: 'Categories',  href: '/admin/categories',   icon: Tag },
-  { name: 'Inventory',   href: '/admin/inventory',    icon: Package },
-  { name: 'Ingredients', href: '/admin/ingredients',  icon: Leaf },
-  { name: 'Analytics',   href: '/admin/analytics',    icon: BarChart3 },
-  { name: 'Employees',   href: '/admin/employees',    icon: Users },
-  { name: 'Settings',    href: '/admin/settings',     icon: Settings },
+  { name: 'Dashboard',     href: '/dashboard/admin',         icon: LayoutDashboard },
+  { name: 'Orders',        href: '/orders',                  icon: ClipboardList },
+  { name: 'Payments',      href: '/payments',                icon: CreditCard },
+  { name: 'Inventory',     href: '/dashboard/inventory',     icon: Package },
+  { name: 'Analytics',     href: '/dashboard/analytics',     icon: BarChart3 },
+  { name: 'CRM',           href: '/dashboard/crm',           icon: Users },
+  { name: 'AI Assistant',  href: '/dashboard/ai',            icon: Brain },
+  { name: 'Communication', href: '/dashboard/communication', icon: MessageSquare },
+  { name: 'Franchise',     href: '/dashboard/franchise',     icon: Globe },
+  { name: 'HRMS / Staff',  href: '/dashboard/employee',      icon: UserCheck },
 ];
 
 export function AdminSidebar() {
@@ -37,7 +38,7 @@ export function AdminSidebar() {
     <aside className="w-64 bg-[#1A1208] text-white hidden md:flex flex-col border-r border-white/10 shrink-0 h-screen sticky top-0">
       {/* Brand */}
       <div className="h-16 flex items-center px-6 border-b border-white/10 shrink-0">
-        <Link href="/admin/dashboard" className="flex items-center gap-3 no-underline">
+        <Link href="/dashboard/admin" className="flex items-center gap-3 no-underline">
           <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#E8441A] to-[#F59E0B] flex items-center justify-center shadow-[0_4px_12px_rgba(232,68,26,0.3)]">
             <Utensils size={14} className="text-white" />
           </div>
