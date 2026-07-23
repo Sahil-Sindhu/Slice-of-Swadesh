@@ -70,10 +70,10 @@ export const getDashboardStats = async (req: Request, res: Response) => {
     const kitchenStatus = pendingOrdersCount > 5 ? 'Busy' : (pendingOrdersCount > 0 ? 'Active' : 'Idle');
 
     return sendSuccess(res, 'Stats retrieved successfully', {
-      todaysOrders: { value: todaysOrdersCount, change: ordersChange, timeframe: 'vs yesterday' },
-      todaysRevenue: { value: todaysRevenue, change: revenueChange, timeframe: 'vs yesterday' },
+      todaysOrders: { value: todaysOrdersCount, trend: ordersChange, isPositive: ordersChange >= 0 },
+      todaysRevenue: { value: todaysRevenue, trend: revenueChange, isPositive: revenueChange >= 0 },
       pendingOrders: { value: pendingOrdersCount },
-      lowStockItems: { value: lowStockCount, change: 0, timeframe: 'vs last week' },
+      lowStockItems: { value: lowStockCount, trend: 0, isPositive: true },
       activeCustomers: { value: activeCustomersCount },
       kitchenStatus
     });
@@ -185,11 +185,11 @@ export const getBestSellingFoods = async (req: Request, res: Response) => {
     });
 
     const result = Object.entries(salesMap).map(([name, data]) => ({
-      id: name,
+      foodId: name,
       name,
-      salesCount: data.qty,
+      orders: data.qty,
       revenue: data.rev
-    })).sort((a, b) => b.salesCount - a.salesCount).slice(0, 5);
+    })).sort((a, b) => b.orders - a.orders).slice(0, 5);
 
     return sendSuccess(res, 'Best sellers retrieved successfully', result);
   } catch (error) {

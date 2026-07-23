@@ -8,6 +8,8 @@ import { Container, Section, Grid, Flex, Stack } from '../../../components/layou
 import { AnalyticsCard } from '../../../components/dashboard/AnalyticsCard';
 import { useQuery } from '@tanstack/react-query';
 import { getAdminNotifications, markAllAsRead, markAsRead } from '../../../features/notification/api/notificationApi';
+import apiClient from '../../../lib/api/client';
+import { MessageSquare, Bell, BellOff, RefreshCw } from 'lucide-react';
 
 interface InAppAlert {
   id: string;
@@ -20,7 +22,7 @@ interface InAppAlert {
 export default function CommunicationDashboardPage() {
   const [activeTab, setActiveTab] = React.useState<'logs' | 'templates' | 'preferences'>('logs');
 
-  const { data: adminNotificationData, refetch } = useQuery({
+  const { data: adminNotificationData, refetch, isRefetching } = useQuery({
     queryKey: ['adminNotifications'],
     queryFn: () => getAdminNotifications(1, 20),
     refetchInterval: 30000,
@@ -41,21 +43,44 @@ export default function CommunicationDashboardPage() {
     }
   };
 
-  const handleSendTestNotification = (e: React.FormEvent) => {
+  const handleSendTestNotification = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!testRecipient || !testContent) return alert('Please enter valid recipient and content specs');
-    alert(`Test notification sent successfully via ${testChannel} to ${testRecipient}`);
+    try {
+      if (testChannel === 'Email') {
+        await apiClient.post('/api/v1/test/email', {
+          to: testRecipient,
+          subject: 'Test Dispatch from Communication Hub',
+          context: {
+            name: 'Recipient',
+            orderId: 'SOS-TEST',
+            amount: '100',
+            totalAmount: '100'
+          }
+        });
+        alert(`Test email notification successfully queued and dispatched to ${testRecipient}`);
+      } else {
+        alert(`Test notification simulated successfully via ${testChannel} to ${testRecipient}`);
+      }
+    } catch (err: any) {
+      alert(`Failed to send test notification: ${err.message || 'Server error'}`);
+    }
     setTestRecipient('');
     setTestContent('');
   };
 
+  // Compile real stats from active notifications database
+  const totalNotifications = adminNotificationData?.pagination?.total || alerts.length;
+  const unreadCount = alerts.filter((a: any) => !a.read).length;
+  const readCount = alerts.filter((a: any) => a.read).length;
+
   return (
     <div className="flex-grow flex bg-[#F9F6F0] text-foreground min-h-screen font-sans">
       {/* 1. Sidebar */}
-      <aside className="w-64 border-r border-border bg-card p-6 hidden md:block shrink-0">
+      <aside className="w-64 border-r border-border bg-surface p-6 hidden md:block shrink-0">
         <div className="mb-8">
           <span className="text-xl font-bold font-display text-primary flex items-center gap-1.5">
-            🍕 <span className="text-foreground font-sans">Swadesh Hub</span>
+            🍕 <span className="text-text font-sans">Swadesh Hub</span>
           </span>
         </div>
         <nav className="flex flex-col gap-2 font-semibold text-sm">
@@ -64,7 +89,7 @@ export default function CommunicationDashboardPage() {
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`w-full text-left px-4 py-2.5 rounded-xl cursor-pointer transition-all ${
-                activeTab === tab ? 'bg-primary text-white' : 'hover:bg-foreground/5 text-foreground/70'
+                activeTab === tab ? 'bg-primary text-white' : 'hover:bg-text/5 text-text-2'
               }`}
             >
               {tab.toUpperCase()}
@@ -79,19 +104,22 @@ export default function CommunicationDashboardPage() {
           {/* Header Action row */}
           <Flex justify="between" className="mb-8 select-none">
             <div>
-              <h1 className="text-3xl font-display font-bold">Enterprise Communication Hub</h1>
-              <p className="text-xs text-foreground/50 mt-1">Configure automated triggers, monitor open rates, and dispatch test payloads.</p>
+              <h1 className="text-3xl font-display font-bold text-text">Enterprise Communication Hub</h1>
+              <p className="text-xs text-text-3 mt-1">Configure automated triggers, monitor open rates, and dispatch test payloads.</p>
             </div>
-            <Button onClick={handleMarkAllRead} variant="outline" size="sm">
-              Mark all read
-            </Button>
+            <Flex gap="sm" align="center">
+              {isRefetching && <RefreshCw size={14} className="text-text-3 animate-spin" />}
+              <Button onClick={handleMarkAllRead} variant="outline" size="sm" className="no-print">
+                Mark all read
+              </Button>
+            </Flex>
           </Flex>
 
           <Stack gap="lg" className="mb-8">
             <Grid cols={3}>
-              <AnalyticsCard title="Total Dispatches" value="48,500 Alerts" change={2.1} timeframe="via Queue Processor" />
-              <AnalyticsCard title="Average Open Rate" value="38.4%" change={1.5} timeframe="across all channels" />
-              <AnalyticsCard title="Failed Deliveries" value="12 Retries" change={-50} timeframe="automatic retry loops" />
+              <AnalyticsCard title="Total Dispatches" value={`${totalNotifications} Logs`} change={0} timeframe="via Queue Processor" />
+              <AnalyticsCard title="Unread Warnings" value={`${unreadCount} Alerts`} change={unreadCount} timeframe="requires attention" />
+              <AnalyticsCard title="Archived Read Logs" value={`${readCount} Logs`} change={0} timeframe="marked as resolved" />
             </Grid>
           </Stack>
 

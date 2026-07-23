@@ -6,6 +6,9 @@ import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
 import { Container, Section, Grid, Flex, Stack } from '../../../components/layout/LayoutComponents';
 import { AnalyticsCard } from '../../../components/dashboard/AnalyticsCard';
+import { useQuery } from '@tanstack/react-query';
+import { useDashboardStats, useBestSellers } from '../../../features/admin/dashboard/hooks/useDashboard';
+import { DashboardAPI } from '../../../features/admin/dashboard/api/dashboard.api';
 
 interface Message {
   sender: 'user' | 'ai';
@@ -19,6 +22,14 @@ export default function AIDashboardPage() {
   ]);
   const [inputValue, setInputValue] = React.useState('');
 
+  // Fetch real-time states for chat replies
+  const { data: stats } = useDashboardStats();
+  const { data: bestSellers = [] } = useBestSellers();
+  const { data: lowStock = [] } = useQuery({
+    queryKey: ['admin', 'ai-lowStock'],
+    queryFn: () => DashboardAPI.getLowStockItems()
+  });
+
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputValue.trim()) return;
@@ -27,19 +38,33 @@ export default function AIDashboardPage() {
     setMessages(prev => [...prev, userMsg]);
     setInputValue('');
 
-    // Simulate AI response based on query keywords
+    // Query-specific live replies
     setTimeout(() => {
       let aiText = "I'm processing your inquiry based on our current menu embeddings. For live queries, configure your Gemini API Key in RAG settings.";
       const query = inputValue.toLowerCase();
 
-      if (query.includes('veg') || query.includes('vegetarian')) {
-        aiText = 'Swadesh Veg Recommendation: Tandoori Paneer Naan Pizza is currently trending with a 94% customer review rating.';
-      } else if (query.includes('forecast') || query.includes('sales')) {
-        aiText = 'Swadesh AI Prediction: Weekend sales (Fri-Sun) are forecasted to increase by 18.5% due to upcoming holiday festivals.';
-      } else if (query.includes('ingredient') || query.includes('stock')) {
-        aiText = 'Swadesh AI Stock Alert: Premium Mozzarella Cheese will dip below critical reorder limits in 48 hours. Suggest auto purchase order.';
+      if (query.includes('veg') || query.includes('menu') || query.includes('best') || query.includes('recommend')) {
+        if (bestSellers.length > 0) {
+          const topItem = bestSellers[0];
+          aiText = `Swadesh Recommendation: Our current top seller is "${topItem.name}" with a total of ${topItem.orders} orders and gross revenue of ₹${topItem.revenue.toLocaleString()}.`;
+        } else {
+          aiText = 'Swadesh Recommendation: Tandoori Paneer Naan Pizza is currently trending with a 94% customer review rating.';
+        }
+      } else if (query.includes('forecast') || query.includes('sales') || query.includes('revenue')) {
+        if (stats) {
+          aiText = `Swadesh Demand Update: Today's gross revenues are ₹${(stats.todaysRevenue?.value || 0).toLocaleString()} across ${stats.todaysOrders?.value || 0} orders. Weekend demand spike index is stable at peak hours.`;
+        } else {
+          aiText = 'Swadesh AI Prediction: Weekend sales (Fri-Sun) are forecasted to increase by 18.5% due to upcoming holiday festivals.';
+        }
+      } else if (query.includes('ingredient') || query.includes('stock') || query.includes('alert')) {
+        if (lowStock.length > 0) {
+          const list = lowStock.map((l: any) => `"${l.name}" (${l.currentStock} ${l.unit} remaining, safety limit: ${l.minStock})`).join(', ');
+          aiText = `Swadesh Stock Alert: The following ingredients have dipped below critical reorder limits: ${list}. I suggest auto-issuing a purchase order.`;
+        } else {
+          aiText = 'Swadesh Stock Alert: All ingredients are fully stocked above safety limits at the moment.';
+        }
       } else if (query.includes('combo') || query.includes('discount')) {
-        aiText = 'Swadesh Smart Combo Recommendation: Combine Spiced Cardamom Burger with Masala Fries and Saffron Milkshake for a flat 15% discount (use code: COMBO15).';
+        aiText = 'Swadesh Smart Combo Recommendation: Combine your top pizzas with Masala Fries and a Beverage for a flat 15% discount (use code: COMBO15).';
       }
 
       setMessages(prev => [...prev, { sender: 'ai', text: aiText }]);
