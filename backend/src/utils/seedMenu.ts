@@ -110,6 +110,36 @@ const foodsData = [
   { categorySlug: "combos", name: "Double Combo - 349", slug: "double-combo-349", description: "2 Cold Coffee + 1 Grilled Sandwich + 1 Veggie Maggi + 1 Salted Fries", basePrice: 349, foodType: "Veg" as const, preparationTime: 18, variants: [{ name: "Regular", price: 349 }] }
 ];
 
+const imageMap: Record<string, string> = {
+  // Category fallbacks
+  pizza: "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=600&q=80",
+  "special-items": "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=600&q=80",
+  maggie: "https://images.unsplash.com/photo-1612927601601-6638404737ce?auto=format&fit=crop&w=600&q=80",
+  momos: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=600&q=80",
+  sandwich: "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=600&q=80",
+  burger: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80",
+  fries: "https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=600&q=80",
+  "sauce-pasta": "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=600&q=80",
+  "hot-beverage": "https://images.unsplash.com/photo-1544787219-7f47ccb76574?auto=format&fit=crop&w=600&q=80",
+  shakes: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?auto=format&fit=crop&w=600&q=80",
+  "ice-cream": "https://images.unsplash.com/photo-1501443762994-82bd5dace89a?auto=format&fit=crop&w=600&q=80",
+  combos: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80",
+
+  // Specific items (Optional override)
+  "onion-corn-tomato-capsicum": "https://images.unsplash.com/photo-1571066811602-716837d681de?auto=format&fit=crop&w=600&q=80",
+  "farm-house-pizza": "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=600&q=80",
+  "peppy-paneer-pizza": "https://images.unsplash.com/photo-1604917621956-10dfa7cce2e7?auto=format&fit=crop&w=600&q=80",
+  "slice-of-swadesh-special-pizza": "https://images.unsplash.com/photo-1534308983496-4fabb1a015ee?auto=format&fit=crop&w=600&q=80",
+  "kulhad-pizza": "https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?auto=format&fit=crop&w=600&q=80",
+  "cheese-garlic-bread-4pc": "https://images.unsplash.com/photo-1573140247632-f8fd74997d5c?auto=format&fit=crop&w=600&q=80",
+  "salted-fries": "https://images.unsplash.com/photo-1576107232684-1279f390859f?auto=format&fit=crop&w=600&q=80",
+  "white-sauce-pasta": "https://images.unsplash.com/photo-1645112411341-6c4fd023714a?auto=format&fit=crop&w=600&q=80",
+  "oreo-shake": "https://images.unsplash.com/photo-1532713031318-db2d14e4b3e1?auto=format&fit=crop&w=600&q=80",
+  "kit-kat-shake": "https://images.unsplash.com/photo-1579954115545-a95591f28bfc?auto=format&fit=crop&w=600&q=80",
+  "vanilla-ice-cream": "https://images.unsplash.com/photo-1570197788417-0e82375c9371?auto=format&fit=crop&w=600&q=80",
+  "chocolate-ice-cream": "https://images.unsplash.com/photo-1563805042-7684c019e1cb?auto=format&fit=crop&w=600&q=80",
+};
+
 async function seed() {
   const connString = process.env.MONGODB_URI || "mongodb://localhost:27017/slice-of-swadesh";
   console.log("Connecting to MongoDB for menu seeding...");
@@ -148,12 +178,15 @@ async function seed() {
       continue;
     }
 
+    const imageUrl = imageMap[f.slug] || imageMap[f.categorySlug] || "https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=600&q=80";
+
     const createdFood = await Food.create({
       name: f.name,
       slug: f.slug,
       description: f.description || "",
       basePrice: f.basePrice,
       category: new mongoose.Types.ObjectId(categoryId),
+      images: [{ url: imageUrl, alt: f.name }],
       foodType: f.foodType,
       isAvailable: true,
       preparationTime: f.preparationTime,
