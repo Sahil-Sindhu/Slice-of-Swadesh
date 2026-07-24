@@ -26,6 +26,9 @@ export class CacheService {
 
   static async get<T>(key: string): Promise<T | null> {
     this.ensureInitialized();
+    if (process.env.NODE_ENV === 'development') {
+      return null;
+    }
     return this.provider.get(key);
   }
 
@@ -46,6 +49,10 @@ export class CacheService {
    */
   static async getOrSet<T>(key: string, fallbackFn: () => Promise<T>, ttlSeconds?: number): Promise<T> {
     this.ensureInitialized();
+
+    if (process.env.NODE_ENV === 'development') {
+      return fallbackFn();
+    }
 
     const cached = await this.provider.get(key);
     if (cached) {
