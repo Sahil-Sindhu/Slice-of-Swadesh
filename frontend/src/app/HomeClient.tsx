@@ -438,15 +438,15 @@ export default function HomeClient() {
                 <Flame size={14} /> Today's Special
               </span>
               <h2 className="text-white text-3xl lg:text-4xl font-black font-[family-name:var(--font-outfit)] leading-tight m-0">
-                Double Paneer<br />Makhani Burger
+                Swadesh Special<br />Burger
               </h2>
               <p className="text-white/70 text-sm leading-relaxed m-0 max-w-md font-medium">
-                Dual paneer steaks grilled to perfection, drenched in cardamom-infused makhani sauce, wrapped in toasted brioche.
+                Our signature chef-special burger packed with a crispy golden paneer patty, rich tandoori spices, fresh veggies, and creamy cheese sauce.
               </p>
               <div className="flex items-center gap-3 mt-2">
-                <span className="text-[#F59E0B] text-3xl font-black">₹320</span>
-                <span className="text-white/30 text-lg font-bold line-through">₹400</span>
-                <span className="bg-[#F59E0B]/15 text-[#F59E0B] border border-[#F59E0B]/30 rounded-lg px-3 py-1 text-xs font-bold uppercase tracking-wider">Save ₹80</span>
+                <span className="text-[#F59E0B] text-3xl font-black">₹89</span>
+                <span className="text-white/30 text-lg font-bold line-through">₹119</span>
+                <span className="bg-[#F59E0B]/15 text-[#F59E0B] border border-[#F59E0B]/30 rounded-lg px-3 py-1 text-xs font-bold uppercase tracking-wider">Save ₹30</span>
               </div>
               <Button variant="primary" className="w-max mt-2 py-3.5 px-8 shadow-[0_8px_24px_rgba(232,68,26,0.3)] group-hover:scale-105 group-hover:shadow-[0_12px_32px_rgba(232,68,26,0.4)]">
                 Claim Offer <MoveRight size={18} className="ml-2 group-hover:translate-x-1 transition-transform" />
