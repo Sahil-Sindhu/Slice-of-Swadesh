@@ -12,8 +12,8 @@ const PROTECTED_PATTERNS = [
 ];
 
 // ─── Auth-only routes ─────────────────────────────────────────────────────────
-// Logged-in users visiting /login or /register are redirected away.
-const AUTH_ONLY_PATTERNS = [/^\/login$/, /^\/register$/];
+// Logged-in users visiting /register are redirected away.
+const AUTH_ONLY_PATTERNS = [/^\/register$/];
 
 // JWT decoder helper for Next.js Edge Runtime
 function decodeJwt(token: string): { id: string; role: string } | null {
