@@ -171,14 +171,17 @@ async function seed() {
     console.log(`Created Category: ${createdCat.name}`);
   }
 
-  for (const f of foodsData) {
+  const totalFoods = foodsData.length;
+  for (let i = 0; i < totalFoods; i++) {
+    const f = foodsData[i];
     const categoryId = categoryIdMap[f.categorySlug];
     if (!categoryId) {
       console.warn(`Category slug ${f.categorySlug} not found. Skipping.`);
       continue;
     }
 
-    const imageUrl = imageMap[f.slug] || imageMap[f.categorySlug] || "https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=600&q=80";
+    const baseImageUrl = imageMap[f.slug] || imageMap[f.categorySlug] || "https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=600&q=80";
+    const uniqueImageUrl = `${baseImageUrl}${baseImageUrl.includes('?') ? '&' : '?'}sig=${i}`;
 
     const createdFood = await Food.create({
       name: f.name,
@@ -186,7 +189,7 @@ async function seed() {
       description: f.description || "",
       basePrice: f.basePrice,
       category: new mongoose.Types.ObjectId(categoryId),
-      images: [{ url: imageUrl, alt: f.name }],
+      images: [{ url: uniqueImageUrl, alt: f.name }],
       foodType: f.foodType,
       isAvailable: true,
       preparationTime: f.preparationTime,
